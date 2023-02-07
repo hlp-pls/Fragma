@@ -16,6 +16,7 @@ import glcontext
 from __lexer import GLSLLexer
 from __mgl_window import MGL_WINDOW
 from __labeled_int_field import LabelledIntField
+from __labeled_float_field import LabelledFloatField
 
 default_code = '''#version 330
 out vec4 outputColor;
@@ -162,12 +163,15 @@ class CustomMainWindow(QMainWindow):
         whlayout = QHBoxLayout()
         self.wdiv = LabelledIntField('', self.__myFont, 400)
         self.hdiv = LabelledIntField('', self.__myFont, 400)
+        self.pd_div = LabelledFloatField('', self.__myFont, 2.0)
         #self.wdiv.label.setPixmap(self.__aspect_icon)
         #self.wdiv.label.resize(int(self.__aspect_icon.width() * 0.5),int(self.__aspect_icon.height() * 0.5))
        
         whlayout.addWidget(self.wdiv)
         whlayout.setSpacing(10)
         whlayout.addWidget(self.hdiv)
+        whlayout.setSpacing(10)
+        whlayout.addWidget(self.pd_div)
         whlayout.addStretch(9)
         
         panel_layout.addLayout(whlayout)
@@ -379,11 +383,11 @@ class CustomMainWindow(QMainWindow):
 
     def __run_btn_action(self):
         print("Run Button Clicked.")
-        
+        max_size = int(self.__mgl_max_size[0] / self.pd_div.getValue())
         window_dimension_changed = False
-        if self.wdiv.getValue() < 2 or self.wdiv.getValue() > self.__mgl_max_size[0] or self.hdiv.getValue() < 2 or self.hdiv.getValue() > self.__mgl_max_size[0]:
-            window_width = min(max(self.wdiv.getValue(), 2),self.__mgl_max_size[0])
-            window_height = min(max(self.hdiv.getValue(), 2),self.__mgl_max_size[0])
+        if self.wdiv.getValue() < 2 or self.wdiv.getValue() > max_size or self.hdiv.getValue() < 2 or self.hdiv.getValue() > max_size:
+            window_width = min(max(self.wdiv.getValue(), 2),max_size)
+            window_height = min(max(self.hdiv.getValue(), 2),max_size)
             self.printConsole(f"Window dimension ({self.wdiv.getValue()},{self.hdiv.getValue()}) out of range.\nWindow dimension set to ({window_width},{window_height})")
             self.wdiv.lineEdit.setText(str(window_width))
             self.hdiv.lineEdit.setText(str(window_height))
@@ -398,7 +402,7 @@ class CustomMainWindow(QMainWindow):
                 resizable=False
             )
             self.__runner_window.exit_key = self.__runner_window.keys.ESCAPE
-            self.__runner = MGL_WINDOW(ctx=self.__runner_window.ctx, wnd=self.__runner_window, app=self)
+            self.__runner = MGL_WINDOW(ctx=self.__runner_window.ctx, wnd=self.__runner_window, app=self, pixel_density=self.pd_div.getValue())
             self.__runner.__setup__(editors=self.__editors)
         elif isinstance(self.__runner, MGL_WINDOW):
             self.__runner.close_window()

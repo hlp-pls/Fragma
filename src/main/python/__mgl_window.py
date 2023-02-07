@@ -13,6 +13,7 @@ class MGL_WINDOW(mglw.WindowConfig):
         self.size = kwargs["wnd"].size
         self.window = kwargs["wnd"]
         self.app = kwargs["app"]
+        self.pixel_density = kwargs["pixel_density"]
         self.timer = mglw.Timer()
         self.timer.start()
 
@@ -38,7 +39,7 @@ class MGL_WINDOW(mglw.WindowConfig):
             try:
                 new_fbo = MGL_FBO(
                     ctx = self.ctx, 
-                    size = self.size, 
+                    size = (int(self.size[0]*self.pixel_density),int(self.size[1]*self.pixel_density)), 
                     fragment_shader = editor.text(), 
                     enable_backbuffer = True,
                     window = self.window)
