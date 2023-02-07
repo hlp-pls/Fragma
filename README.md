@@ -14,8 +14,9 @@ glcontext
 ```
 
 ## How To Use
+[latest release](https://github.com/hlp-pls/Fragma/releases/latest)
 ```
-1. Download and unzip from [release](https://github.com/hlp-pls/Fragma/releases/latest)
+1. Download zip from latest release
 2. Install with .dmg file from zip
 3. Open Fragma
 4. Edit text and click play button
