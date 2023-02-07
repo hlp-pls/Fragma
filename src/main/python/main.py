@@ -155,7 +155,7 @@ class CustomMainWindow(QMainWindow):
 
         mgl_ctx_tester = moderngl.create_context(standalone=True, require=(330))
         self.__mgl_max_size = mgl_ctx_tester.info["GL_MAX_VIEWPORT_DIMS"]
-        self.__mgl_max_size = (min(self.__mgl_max_size[0], 1080), min(self.__mgl_max_size[0], 1080))
+        #self.__mgl_max_size = (min(self.__mgl_max_size[0], 1080), min(self.__mgl_max_size[0], 1080))
         mgl_ctx_tester.release()
         print(self.__mgl_max_size) 
 
