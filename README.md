@@ -15,11 +15,12 @@ glcontext
 
 ## How To Use
 ```
-1. Install with .dmg file
-2. Open Fragma
-3. Edit text and click play button
-4. Open files (shortcut: command + o) with .fragma extension included in examples folder
-5. Save files (shortcut: command + s)
+1. Download and unzip from [release](https://github.com/hlp-pls/Fragma/releases/latest)
+2. Install with .dmg file from zip
+3. Open Fragma
+4. Edit text and click play button
+5. Open files (shortcut: command + o) with .fragma extension included in examples folder
+6. Save files (shortcut: command + s)
 
 *** no GLSL version change available
 *** current max window size 1080, 1080
