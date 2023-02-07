@@ -1,8 +1,7 @@
 # Fragma
-GLSL editor for playing with fragment shader.
-Currently only supports MacOS versions same or higher than 12.0.1 (bulit on 12.0.1)
-
-No support yet for Windows and Linux
+GLSL editor for playing with fragment shader. <br>
+Currently only supports MacOS versions same or higher than 12.0.1 (bulit on 12.0.1) <br>
+No support yet for Windows and Linux <br>
 
 ## Dependencies
 Built using [fbs](https://build-system.fman.io/)
