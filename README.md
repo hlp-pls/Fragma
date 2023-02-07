@@ -27,8 +27,7 @@ glcontext
 6. Open files (shortcut: command + o) with .fragma extension included in examples folder
 7. Save files (shortcut: command + s)
 
-*** no GLSL version change available
-*** current max window size 1080, 1080
+*** GLSL version change not available
 ```
 
 ## Usage Example
