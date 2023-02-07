@@ -1,5 +1,6 @@
 # Fragma
 Currently only supports MacOS versions same or higher than 12.0.1 (bulit on 12.0.1)
+
 No support yet for Windows and Linux
 
 ## Dependencies
