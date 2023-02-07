@@ -1,0 +1,8 @@
+fbs
+ctypes
+PyQt5
+qscintilla
+pyglet
+moderngl
+moderngl-window
+glcontext

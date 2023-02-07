@@ -1,0 +1,91 @@
+
+QMainWindow {
+    
+}
+
+QWidget {
+    background: #454545;
+    border-radius: 5px;
+}
+
+QLineEdit {
+    background: #ffffff;
+    border: none;
+    height: 20px;
+    border-radius: 12px;
+    padding: 2px 8px;
+    color: #000000;
+}
+
+QLineEdit:focus {
+    background: #ffffff;
+    border: none;
+    outline: none;
+}
+
+QPushButton {
+    background: #ffffff;
+    border: none;
+    height: 20px;
+    border-radius: 12px;
+    padding: 2px 16px;
+    color: #000000;
+}
+
+QPushButton:hover,
+QPushButton:focus {
+  background: #888888;
+  /*color: #0000ff;*/
+}
+
+QPushButton#quit_btn, QPushButton#max_btn {
+    border-radius: 6px;
+    padding: 0px;
+}
+
+QPushButton#quit_btn:hover {
+    background: #ff0000;
+}
+
+QPushButton#max_btn:hover {
+    background: #00ff00;
+}
+
+QScrollBar:vertical {              
+    border: none;
+    background: #ffffff;
+    width: 16px;
+    margin: 0px;
+    border-radius: 0px;
+}
+
+QTextEdit QScrollBar:vertical {              
+    background: transparent;
+}
+
+QScrollBar::handle:vertical {
+    min-height: 0px;
+    background: #6e6e6e;
+    border: none;
+    width: 8px;
+    margin: 4px;
+    border-radius: 4px;
+}
+
+QScrollBar::add-line:vertical {
+    height: 0px;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line:vertical {
+    height: 0px;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}
+
+QFrame#editor_frame {
+    border-radius: 5px;
+    padding: 10px 5px 10px 5px;
+    background: #ffffff;
+}
