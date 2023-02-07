@@ -22,9 +22,10 @@ glcontext
 1. Download zip from latest release
 2. Install with .dmg file from zip
 3. Open Fragma
-4. Edit text and click play button
-5. Open files (shortcut: command + o) with .fragma extension included in examples folder
-6. Save files (shortcut: command + s)
+4. Set window size and pixel density
+5. Edit text and click play button
+6. Open files (shortcut: command + o) with .fragma extension included in examples folder
+7. Save files (shortcut: command + s)
 
 *** no GLSL version change available
 *** current max window size 1080, 1080
