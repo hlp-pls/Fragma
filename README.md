@@ -1,5 +1,6 @@
 # Fragma
 GLSL editor for playing with fragment shader. <br>
+Currently only supports single pass rendering. <br>
 Currently only supports MacOS versions same or higher than 12.0.1 (bulit on 12.0.1) <br>
 No support yet for Windows and Linux <br>
 
