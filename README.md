@@ -26,11 +26,12 @@ source code features may differ from release versions
 2. Install with .dmg file from zip
 3. Open Fragma
 4. Set window size and framerate with input field (width), (height), (framerate)
-5. Edit text and click play button
+5. Edit text and click play button (press stop button to close)
 6. Open files (shortcut: command + o) with .fragma extension included in examples folder
 7. Save files (shortcut: command + s)
 
 *** GLSL version change not available
+*** ERROR console is not yet fully implemented. Errors will keep appending to the end until the stop button is pressed and the console is cleared.
 ```
 
 ## Usage Example
