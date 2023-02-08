@@ -17,8 +17,8 @@ glcontext
 ```
 
 ## How To Use
-[latest release](https://github.com/hlp-pls/Fragma/releases/latest)
-[examples folder](https://github.com/hlp-pls/Fragma/examples)
+[latest release](https://github.com/hlp-pls/Fragma/releases/latest) <br>
+[examples folder](https://github.com/hlp-pls/Fragma/examples) <br>
 source code features may differ from release versions
 
 ```
