@@ -16,7 +16,7 @@ class MGL_WINDOW(mglw.WindowConfig):
         self.pixel_density = kwargs["pixel_density"]
         self.timer = mglw.Timer()
         self.timer.start()
-        self.fps = 60
+        self.fps = kwargs["fps"]
         self.fps_limit = 1 / self.fps
         self.has_closed = False
         #pyglet.app.run()
@@ -81,9 +81,9 @@ class MGL_WINDOW(mglw.WindowConfig):
 
     def close(self):
         #print(self.window.is_closing)
+        duration = self.timer.time
+        print(self.window.frames / duration)
         if self.window.is_closing == False:
-            duration = self.timer.time
-            print(self.window.frames / duration)
             self.window.close()
 
     def do_render(self):

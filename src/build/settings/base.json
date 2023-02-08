@@ -2,5 +2,5 @@
     "app_name": "Fragma",
     "author": "chgnhyk",
     "main_module": "src/main/python/main.py",
-    "version": "0.0.1"
+    "version": "0.0.2"
 }

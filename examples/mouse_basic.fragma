@@ -1,0 +1,19 @@
+#version 330
+out vec4 outputColor;
+in vec2 UV;
+
+uniform sampler2D bckbuffer;
+uniform vec2 resolution;
+uniform vec2 mouse;
+uniform float time;
+
+void main() {
+	vec2 uv = UV;
+    float dst = length(uv-mouse);
+    vec3 col = vec3(
+    sin(dst*4.+time)*.5+.5,
+    sin(dst*2.+time)*.5+.5,
+    sin(dst*1.+time)*.5+.5);
+    outputColor = vec4(col,1.);
+}
+/**========END_OF_FRAGMENT========**/

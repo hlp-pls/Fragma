@@ -150,7 +150,7 @@ class MGL_FBO:
         for (name, texture) in self.textures.items():
             #print(name, texture, self.texture_uniforms[name].value)
             textureid = self.texture_uniforms[name].value
-            self.textures[name].use(textureid)
+            #self.textures[name].use(textureid)
             self.texture_uniforms[name].value = textureid
     
         if "time" in kwargs:
