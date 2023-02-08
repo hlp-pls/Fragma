@@ -16,7 +16,8 @@ class MGL_WINDOW(mglw.WindowConfig):
         self.pixel_density = kwargs["pixel_density"]
         self.timer = mglw.Timer()
         self.timer.start()
-
+        self.fps = 60
+        self.fps_limit = 1 / self.fps
         self.has_closed = False
         #pyglet.app.run()
         #self.window = pyglet.app.window
@@ -25,6 +26,7 @@ class MGL_WINDOW(mglw.WindowConfig):
 
     def __setup__(self, editors):
         self.timer.time = 0.0
+        self.prev_time = 0.0
         print("setup starting...")
         self.time = 0.0
         for __fbo in self.__fbos:
@@ -80,13 +82,19 @@ class MGL_WINDOW(mglw.WindowConfig):
     def close(self):
         #print(self.window.is_closing)
         if self.window.is_closing == False:
+            duration = self.timer.time
+            print(self.window.frames / duration)
             self.window.close()
 
     def do_render(self):
         while not self.window.is_closing:
-            self.window.clear()
-            if self.has_set == True:
-                for __fbo in self.__fbos:
-                    if isinstance(__fbo, MGL_FBO):
-                        __fbo.render(time=self.timer.time, render_to_window=True)
-            self.window.swap_buffers()      
+            current_time = self.timer.time
+            time_took_to_render = current_time - self.prev_time
+            if time_took_to_render >= self.fps_limit:
+                self.window.clear()
+                if self.has_set == True:
+                    for __fbo in self.__fbos:
+                        if isinstance(__fbo, MGL_FBO):
+                            __fbo.render(time=self.timer.time, render_to_window=True)
+                self.window.swap_buffers()
+                self.prev_time = current_time   

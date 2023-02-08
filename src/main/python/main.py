@@ -164,6 +164,7 @@ class CustomMainWindow(QMainWindow):
         self.wdiv = LabelledIntField('', self.__myFont, 400)
         self.hdiv = LabelledIntField('', self.__myFont, 400)
         self.pd_div = LabelledFloatField('', self.__myFont, 2.0)
+        self.fps_div = LabelledFloatField('', self.__myFont, 60.0)
         #self.wdiv.label.setPixmap(self.__aspect_icon)
         #self.wdiv.label.resize(int(self.__aspect_icon.width() * 0.5),int(self.__aspect_icon.height() * 0.5))
        
@@ -172,6 +173,8 @@ class CustomMainWindow(QMainWindow):
         whlayout.addWidget(self.hdiv)
         whlayout.setSpacing(10)
         whlayout.addWidget(self.pd_div)
+        whlayout.setSpacing(10)
+        whlayout.addWidget(self.fps_div)
         whlayout.addStretch(9)
         
         panel_layout.addLayout(whlayout)
@@ -399,10 +402,11 @@ class CustomMainWindow(QMainWindow):
                 gl_version=(3, 3),
                 size=(self.wdiv.getValue(), self.hdiv.getValue()),
                 cursor=True,
-                resizable=False
+                resizable=False,
+                vsync=True
             )
             self.__runner_window.exit_key = self.__runner_window.keys.ESCAPE
-            self.__runner = MGL_WINDOW(ctx=self.__runner_window.ctx, wnd=self.__runner_window, app=self, pixel_density=self.pd_div.getValue())
+            self.__runner = MGL_WINDOW(ctx=self.__runner_window.ctx, wnd=self.__runner_window, app=self, pixel_density=self.pd_div.getValue(), fps=self.fps_div.getValue())
             self.__runner.__setup__(editors=self.__editors)
         elif isinstance(self.__runner, MGL_WINDOW):
             self.__runner.close_window()
