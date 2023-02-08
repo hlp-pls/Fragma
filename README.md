@@ -35,9 +35,9 @@ source code features may differ from release versions
 ```
 
 ## Usage Example
+video recording (realtime)
 
-
-https://user-images.githubusercontent.com/53251969/217206729-2d6543ba-4470-4a88-97c6-179bfba2a5c1.mp4
+https://user-images.githubusercontent.com/53251969/217433873-3254cc29-a5a5-48e8-b026-d97af3146ac9.mp4
 
 
 
