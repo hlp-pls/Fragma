@@ -1,5 +1,6 @@
 # Fragma
 GLSL editor for playing with fragment shader. <br>
+Currently only supports single pass rendering. <br>
 Currently only supports MacOS versions same or higher than 12.0.1 (bulit on 12.0.1) <br>
 No support yet for Windows and Linux <br>
 
@@ -17,8 +18,8 @@ glcontext
 ```
 
 ## How To Use
-[latest release](https://github.com/hlp-pls/Fragma/releases/latest)
-[examples folder](https://github.com/hlp-pls/Fragma/examples)
+[latest release](https://github.com/hlp-pls/Fragma/releases/latest) <br>
+[examples folder](https://github.com/hlp-pls/Fragma/examples) <br>
 source code features may differ from release versions
 
 ```
@@ -35,9 +36,9 @@ source code features may differ from release versions
 ```
 
 ## Usage Example
+video recording (realtime)
 
-
-https://user-images.githubusercontent.com/53251969/217206729-2d6543ba-4470-4a88-97c6-179bfba2a5c1.mp4
+https://user-images.githubusercontent.com/53251969/217433873-3254cc29-a5a5-48e8-b026-d97af3146ac9.mp4
 
 
 
