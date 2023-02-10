@@ -1,5 +1,6 @@
 from __framebuffer import MGL_FBO
 import moderngl_window as mglw
+import time
 
 class MGL_WINDOW(mglw.WindowConfig):
     
@@ -88,6 +89,7 @@ class MGL_WINDOW(mglw.WindowConfig):
 
     def do_render(self):
         while not self.window.is_closing:
+            time.sleep(self.fps_limit)
             current_time = self.timer.time
             time_took_to_render = current_time - self.prev_time
             if time_took_to_render >= self.fps_limit:
