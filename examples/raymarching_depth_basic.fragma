@@ -1,0 +1,66 @@
+#version 330
+out vec4 outputColor;
+in vec2 UV;
+
+uniform sampler2D bckbuffer;
+uniform vec2 resolution;
+uniform vec2 mouse;
+uniform float time;
+
+// this function recieves a coordinate in space, and tells the distance from the current coordinate to an object in space
+float getDist(vec3 p){
+// distance to plane
+float plane = p.y + .5;
+// this repeats space 
+p.xz = mod(p.xz, 1.) - .5;
+// distance to ball
+float ball = length(p)-.4;
+// get the nearest distance
+float dist = min(plane, ball);
+return dist;
+}
+
+void main() {
+	vec2 uv = UV;
+    vec2 rs = resolution;
+    uv = (uv-.5)*rs/rs.y;
+    
+    vec3 camera = vec3(3.5*cos(time),1.,3.5*sin(time)); // position of camera
+    vec3 lookat = vec3(0.,0.,0.); // where in space is the camera looking at
+    
+    vec3 cam_dir = normalize(camera - lookat); // normalize look direction
+    
+    float cam_to_screen = 1.; // distance from our camera to scene
+    vec3 screen_center = camera + cam_dir * cam_to_screen; // center of the screen
+    
+    // get perpendicular vector from "cam_dir" and a normalized vector in y-axis (axis in space) direction,
+    // then, use the retrieved vector to get the perpendicular vector from this and "cam_dir" again, which results in getting the y-axis component of screen
+    vec3 screen_y_axis = cross(cam_dir, cross(cam_dir, vec3(0.,1.,0.)));
+    // get vector perpendicular with y axis in screen (which is screen_y_axis now),
+    // and cam_dir, which results in the x-axis component of the screen that we are creating
+    vec3 screen_x_axis = cross(cam_dir, screen_y_axis);
+    
+    // map the uv coordinates to the screen plane
+    vec3 screen_coords = screen_center + screen_y_axis * uv.y + screen_x_axis * uv.x;
+    
+    //ray starts from camera to a screen coordinate
+    vec3 ray_dir = normalize(camera - screen_coords);
+    vec3 ray_origin = camera; // we will march this vector in space
+    
+    //ray marching!
+    float depth = 0.;
+    for(int i=0; i<64; i++){
+       float march_depth = getDist(ray_origin); //--> we did not make this function yet
+        ray_origin += ray_dir * march_depth; // move ray origin in ray_dir direction and march_depth length
+        depth += march_depth; // add the distances as we go
+        if(depth < .01 || depth > 100){
+           // stop ray marching when the ray origin is close to an objects surface or if it seems to far and assumed to never reach a surface 
+           break;
+        }
+    }
+    
+    vec3 col = vec3(1./depth);
+    
+	outputColor = vec4(col,1.);
+}
+/**========END_OF_FRAGMENT========**/
