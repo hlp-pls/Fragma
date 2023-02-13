@@ -2,3 +2,4 @@ venv/
 fbs_pro-1.1.9.tar.gz
 target/
 examples/new/
+src/build/settings/secret.json
