@@ -61,6 +61,8 @@ class MGL_WINDOW(mglw.WindowConfig):
             print("setup complete")
             print(self.has_set)
 
+            # set each pass texture as buffer in each other passes
+
             self.do_render()
         else:
             self.window.close()
@@ -95,8 +97,11 @@ class MGL_WINDOW(mglw.WindowConfig):
             if time_took_to_render >= self.fps_limit:
                 self.window.clear()
                 if self.has_set == True:
-                    for __fbo in self.__fbos:
+                    for i, __fbo in enumerate(self.__fbos):
                         if isinstance(__fbo, MGL_FBO):
-                            __fbo.render(time=self.timer.time, render_to_window=True)
+                            if i == len(self.__fbos) - 1:
+                                __fbo.render(time=self.timer.time, render_to_window=True)
+                            else:
+                                __fbo.render(time=self.timer.time, render_to_window=False)
                 self.window.swap_buffers()
                 self.prev_time = current_time   

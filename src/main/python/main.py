@@ -201,12 +201,12 @@ class CustomMainWindow(QMainWindow):
         con_layout.setSpacing(10)
 
         # Place New Editor button
-        self.__new_editor_btn = QPushButton("Add")
+        self.__new_editor_btn = QPushButton("Add Pass")
         #self.__new_editor_btn.setFixedWidth(50)
         #self.__new_editor_btn.setFixedHeight(50)
         self.__new_editor_btn.clicked.connect(self.__new_editor_action)
         self.__new_editor_btn.setFont(self.__myFont)
-        #con_layout.addWidget(self.__new_editor_btn)
+        con_layout.addWidget(self.__new_editor_btn)
         con_layout.addStretch(8)
 
         # self.__projnm_btn = QLineEdit()
@@ -224,9 +224,13 @@ class CustomMainWindow(QMainWindow):
         # QScintilla editor setup
         # ------------------------
         self.__editors_layout = QVBoxLayout()
+        self.__editor_tabs = QTabWidget()
         self.__editors_layout.setObjectName("editor_layout")
+        self.__editors_layout.addWidget(self.__editor_tabs)
         self.__lyt.addLayout(self.__editors_layout)
         self.__editors = []
+        self.__editor_compressions = []
+        #
         self.__new_editor_action()
 
         self.__console = QTextEdit()
@@ -433,8 +437,17 @@ class CustomMainWindow(QMainWindow):
         
         editor_frame = QFrame()
         editor_frame.setObjectName("editor_frame")
+        
         editor_layout = QVBoxLayout()
         editor_layout.setContentsMargins(0,0,0,0)
+
+        pass_panel = QHBoxLayout()
+        pass_compression_input = LabelledFloatField('Compression', self.__myFont, 1.0)
+        self.__editor_compressions.append(pass_compression_input)
+        
+        pass_panel.addWidget(pass_compression_input.lineEdit)
+
+        editor_layout.addLayout(pass_panel)
         
         editor = QsciScintilla()
         
@@ -474,7 +487,8 @@ class CustomMainWindow(QMainWindow):
          # ! Add editor to layout !
         editor_layout.addWidget(editor)
         editor_frame.setLayout(editor_layout)
-        self.__editors_layout.addWidget(editor_frame)
+        #self.__editors_layout.addWidget(editor_frame)
+        self.__editor_tabs.addTab(editor_frame, "")
         #self.__editors_layout.addWidget(editor)
 
         
