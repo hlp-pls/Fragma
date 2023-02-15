@@ -89,3 +89,44 @@ QFrame#editor_frame {
     padding: 10px 5px 10px 5px;
     background: #ffffff;
 }
+
+QTabWidget::pane { /* The tab widget frame */
+    /*border-top: 2px solid #C2C7CB;*/
+}
+
+QTabWidget::tab-bar {
+    left: 8px; /* move to the right by 5px */
+}
+
+/* Style the tab using the tab sub-control. Note that
+    it reads QTabBar _not_ QTabWidget */
+QTabBar::tab {
+    background: #aaaaaa;
+    border: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    min-width: 8ex;
+    padding: 4px 2px 2px 2px;
+    color: #000000;
+}
+
+QTabBar::tab:selected, QTabBar::tab:hover {
+    background: #ffffff;
+}
+
+QTabBar::tab:selected {
+    
+}
+
+QTabBar::tab:!selected {
+    margin-top: 0px; /* make non-selected tabs look smaller */
+}
+
+QTabBar::close-button {
+    image: url(resource:close-tab.png);
+    subcontrol-position: right;
+}
+
+QTabBar::close-button:hover {
+    image: url(resource:close-tab-hover.png);
+}

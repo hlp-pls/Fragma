@@ -50,12 +50,22 @@ class CustomMainWindow(QMainWindow):
         #self.__file_dialog.setViewMode(QFileDialog::Detail)
 
         # Resource path
+        
         self.__appctx = AppCTX
         self.__app = App
         print(self.__app)
+        
 
-        self.__app.setStyleSheet(Path(self.__appctx.get_resource('__style.qss')).read_text())
+        rootdir = os.path.dirname(os.path.abspath(__file__))
+        rootdir = os.path.dirname(rootdir)
+        print(rootdir)
+        QDir.addSearchPath('resource',os.path.join(rootdir,"resources/base"))
 
+
+        #self.__app.setStyleSheet(Path(self.__appctx.get_resource('__style.qss')).read_text())
+        cssfile = QFile('resource:__style.qss')
+        cssfile.open(QFile.ReadOnly | QFile.Text)
+        self.__app.setStyleSheet(str(cssfile.readAll(), 'utf-8'))
         # Window setup
         # --------------
 
@@ -223,8 +233,15 @@ class CustomMainWindow(QMainWindow):
 
         # QScintilla editor setup
         # ------------------------
-        self.__editors_layout = QVBoxLayout()
         self.__editor_tabs = QTabWidget()
+        self.__editor_tabs.setFont(self.__myFont)
+        self.__editor_tabs.setTabsClosable(True)
+        self.__editor_tabs.setMovable(True)
+        self.__editor_tabs.tabCloseRequested.connect(self.__remove_editor_action)
+        self.__editor_tab_count = 0
+        #self.__editor_tabs.setTabsE
+
+        self.__editors_layout = QVBoxLayout()
         self.__editors_layout.setObjectName("editor_layout")
         self.__editors_layout.addWidget(self.__editor_tabs)
         self.__lyt.addLayout(self.__editors_layout)
@@ -244,8 +261,6 @@ class CustomMainWindow(QMainWindow):
         self.__mgl_window_cls = mglw.get_window_cls(self.__mgl_window_str)
         self.__runner_window = None
         self.__runner = None
-
-        
 
         # Mouse position
         self.__mpos = [0, 0]
@@ -390,6 +405,9 @@ class CustomMainWindow(QMainWindow):
 
     def __run_btn_action(self):
         print("Run Button Clicked.")
+        #print(self.__editor_tabs.findChildren(QsciScintilla))
+        print("TEST", len(self.__editor_tabs.findChildren(QLineEdit)))
+
         max_size = int(self.__mgl_max_size[0] / self.pd_div.getValue())
         window_dimension_changed = False
         if self.wdiv.getValue() < 2 or self.wdiv.getValue() > max_size or self.hdiv.getValue() < 2 or self.hdiv.getValue() > max_size:
@@ -410,8 +428,13 @@ class CustomMainWindow(QMainWindow):
                 vsync=True
             )
             self.__runner_window.exit_key = self.__runner_window.keys.ESCAPE
-            self.__runner = MGL_WINDOW(ctx=self.__runner_window.ctx, wnd=self.__runner_window, app=self, pixel_density=self.pd_div.getValue(), fps=self.fps_div.getValue())
-            self.__runner.__setup__(editors=self.__editors)
+            self.__runner = MGL_WINDOW(
+                ctx=self.__runner_window.ctx, 
+                wnd=self.__runner_window, 
+                app=self, 
+                pixel_density=self.__editor_tabs.findChildren(QLineEdit),#self.pd_div.getValue(),
+                fps=self.fps_div.getValue())
+            self.__runner.__setup__(editors=self.__editor_tabs.findChildren(QsciScintilla))
         elif isinstance(self.__runner, MGL_WINDOW):
             self.__runner.close_window()
             self.__runner = None
@@ -431,65 +454,76 @@ class CustomMainWindow(QMainWindow):
             self.__runner.close_window()
             self.__runner = None  
     
+    def __remove_editor_action(self, index):
+        if self.__editor_tabs.count() > 1:
+            print("remove editor", index)
+            self.__editor_tabs.removeTab(index)
+        else:
+            print("just one left")
+
     def __new_editor_action(self):
         print("New Editor Button Clicked.")
         # Make instance of QsciScintilla class!
-        
-        editor_frame = QFrame()
-        editor_frame.setObjectName("editor_frame")
-        
-        editor_layout = QVBoxLayout()
-        editor_layout.setContentsMargins(0,0,0,0)
+        if self.__editor_tabs.count() < 5:
+            editor_frame = QFrame()
+            editor_frame.setObjectName("editor_frame")
+            
+            editor_layout = QVBoxLayout()
+            editor_layout.setContentsMargins(0,0,0,0)
 
-        pass_panel = QHBoxLayout()
-        pass_compression_input = LabelledFloatField('Compression', self.__myFont, 1.0)
-        self.__editor_compressions.append(pass_compression_input)
-        
-        pass_panel.addWidget(pass_compression_input.lineEdit)
+            pass_panel = QHBoxLayout()
+            pass_compression_input = LabelledFloatField('Compression', self.__myFont, 1.0)
+            #self.__editor_compressions.append(pass_compression_input)
+            
+            pass_panel.addWidget(pass_compression_input.lineEdit)
 
-        editor_layout.addLayout(pass_panel)
-        
-        editor = QsciScintilla()
-        
-        editor.setText(default_code)
-        
-        editor.setBraceMatching(QsciScintilla.SloppyBraceMatch)
+            editor_layout.addLayout(pass_panel)
+            
+            editor = QsciScintilla()
+            #editor.setObjectName("editor")
+            
+            editor.setText(default_code)
+            
+            editor.setBraceMatching(QsciScintilla.SloppyBraceMatch)
 
-        editor.setMarginType(0, QsciScintilla.NumberMargin)
-        editor.setMarginWidth(0, "000")
-        editor.setMarginsForegroundColor(QColor("#8e8e8e"))
-        editor.setMarginsBackgroundColor(QColor("#ffffff"))
-        editor.setMarginsFont(self.__myFont)
+            editor.setMarginType(0, QsciScintilla.NumberMargin)
+            editor.setMarginWidth(0, "000")
+            editor.setMarginsForegroundColor(QColor("#8e8e8e"))
+            editor.setMarginsBackgroundColor(QColor("#ffffff"))
+            editor.setMarginsFont(self.__myFont)
 
-        editor.setWrapMode(QsciScintilla.WrapWord)
-        editor.setWrapIndentMode(QsciScintilla.WrapIndentSame)
-        
-        editor.setIndentationGuides(True)
-        editor.setTabWidth(4)
-        editor.setIndentationsUseTabs(False)
-        editor.setAutoIndent(True)
+            editor.setWrapMode(QsciScintilla.WrapWord)
+            editor.setWrapIndentMode(QsciScintilla.WrapIndentSame)
+            
+            editor.setIndentationGuides(True)
+            editor.setTabWidth(4)
+            editor.setIndentationsUseTabs(False)
+            editor.setAutoIndent(True)
 
-        editor.setEolMode(QsciScintilla.EolUnix)
-        editor.setEolVisibility(False)
+            editor.setEolMode(QsciScintilla.EolUnix)
+            editor.setEolVisibility(False)
 
-        editor.setCaretLineVisible(True)
-        editor.setLexer(None)
-        editor.setUtf8(True)  # Set encoding to UTF-8
-        editor.setFont(self.__myFont)  # Will be overridden by lexer!
-        self.__editors.append(editor)
+            editor.setCaretLineVisible(True)
+            editor.setLexer(None)
+            editor.setUtf8(True)  # Set encoding to UTF-8
+            editor.setFont(self.__myFont)  # Will be overridden by lexer!
+            #self.__editors.append(editor)
 
-        # -------------------------------- #
-        #          Install lexer           #
-        # -------------------------------- #
-        self.__lexer = GLSLLexer(editor, self.__myFont)
-        editor.setLexer(self.__lexer)
+            # -------------------------------- #
+            #          Install lexer           #
+            # -------------------------------- #
+            self.__lexer = GLSLLexer(editor, self.__myFont)
+            editor.setLexer(self.__lexer)
 
-         # ! Add editor to layout !
-        editor_layout.addWidget(editor)
-        editor_frame.setLayout(editor_layout)
-        #self.__editors_layout.addWidget(editor_frame)
-        self.__editor_tabs.addTab(editor_frame, "")
-        #self.__editors_layout.addWidget(editor)
+            # ! Add editor to layout !
+            editor_layout.addWidget(editor)
+            editor_frame.setLayout(editor_layout)
+            #self.__editors_layout.addWidget(editor_frame)
+            self.__editor_tab_count += 1
+            self.__editor_tabs.addTab(editor_frame, str(self.__editor_tab_count) + "")
+            #self.__editors_layout.addWidget(editor)
+        else:
+            print("too many tabs")
 
         
     ''''''

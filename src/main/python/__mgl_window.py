@@ -37,12 +37,12 @@ class MGL_WINDOW(mglw.WindowConfig):
         self.__fbos = []
         print(self.ctx)
         has_exception = False
-        for editor in editors:
-            #print(editor.text())
+        for i, editor in enumerate(editors):
+            print(editor.text())
             try:
                 new_fbo = MGL_FBO(
                     ctx = self.ctx, 
-                    size = (int(self.size[0]*self.pixel_density),int(self.size[1]*self.pixel_density)), 
+                    size = (int(self.size[0]*float(self.pixel_density[i].text())),int(self.size[1]*float(self.pixel_density[i].text()))), 
                     fragment_shader = editor.text(), 
                     enable_backbuffer = True,
                     window = self.window)
