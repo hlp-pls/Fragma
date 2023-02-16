@@ -72,8 +72,7 @@ class CustomMainWindow(QMainWindow):
         print(close_tab, close_tab_hover)
         QSS_text = Path(self.__appctx.get_resource('__style.qss')).read_text()
         QSS_text = QSS_text % {"close_tab": close_tab, "close_tab_hover" : close_tab_hover}
-        #QSS_text = QSS_text % {"close_tab_hover": close_tab_hover}
-        print(QSS_text)
+        #print(QSS_text)
         self.__app.setStyleSheet(QSS_text)
         
         # Window setup
@@ -256,9 +255,9 @@ class CustomMainWindow(QMainWindow):
         self.__editors_layout.setObjectName("editor_layout")
         self.__editors_layout.addWidget(self.__editor_tabs)
         self.__lyt.addLayout(self.__editors_layout)
-        self.__editors = []
-        self.__editor_compressions = []
-        #
+        #self.__editors = []
+        #self.__editor_compressions = []
+        
         self.__new_editor_action()
 
         self.__console = QTextEdit()
@@ -282,8 +281,9 @@ class CustomMainWindow(QMainWindow):
     def saveProject(self):
         print("save file")
         texts = ""
-        for editor in self.__editors:
-            print(editor.text())
+        editors = self.__editor_tabs.findChildren(QsciScintilla)
+        for editor in editors:
+            #print(editor.text())
             texts += editor.text() + MARKER
 
         print(texts)
@@ -300,10 +300,16 @@ class CustomMainWindow(QMainWindow):
         file_data = file.read()
         print(file_data)
 
+        self.__editor_tabs.clear()
+        self.__editor_tab_count = 0
         fragments = file_data.split(MARKER)
-        for index, editor in enumerate(self.__editors):
-            if index < len(fragments):
-                editor.setText(fragments[index])
+        for i, fragment in enumerate(fragments):
+            if i < len(fragments)-1:
+                self.__new_editor_action(text=fragment)
+
+        # for index, editor in enumerate(self.__editors):
+        #     if index < len(fragments):
+        #         editor.setText(fragments[index])
 
         # check available projects
         # projects = self.__project_manager.searchDirectory(self.__appctx.get_resource("projects/"))
@@ -396,8 +402,6 @@ class CustomMainWindow(QMainWindow):
             #self.restoreCursor()
             return None
 
-                
-    
     def center(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
@@ -472,13 +476,18 @@ class CustomMainWindow(QMainWindow):
             self.__runner = None  
     
     def __remove_editor_action(self, index):
-        if self.__editor_tabs.count() > 1:
-            print("remove editor", index)
-            self.__editor_tabs.removeTab(index)
-        else:
-            print("just one left")
+        print("remove editor", index)
+        self.__editor_tabs.removeTab(index)
+        if self.__editor_tabs.count() == 0:
+            self.__editor_tab_count = 0
 
-    def __new_editor_action(self):
+        # if self.__editor_tabs.count() > 1:
+        #     print("remove editor", index)
+        #     self.__editor_tabs.removeTab(index)
+        # else:
+        #     print("just one left")
+
+    def __new_editor_action(self, **kwargs):
         print("New Editor Button Clicked.")
         # Make instance of QsciScintilla class!
         if self.__editor_tabs.count() < 5:
@@ -504,8 +513,11 @@ class CustomMainWindow(QMainWindow):
             self.__editor_tab_count += 1
             editor.setObjectName(str(self.__editor_tab_count))
             
-            editor.setText(default_code)
-            
+            if "text" in kwargs:
+                editor.setText(kwargs["text"])
+            else:
+                editor.setText(default_code)
+
             editor.setBraceMatching(QsciScintilla.SloppyBraceMatch)
 
             editor.setMarginType(0, QsciScintilla.NumberMargin)
