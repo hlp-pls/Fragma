@@ -210,9 +210,10 @@ class CustomMainWindow(QMainWindow):
         con_layout.setSpacing(10)
 
         # Place New Editor button
-        self.__new_editor_btn = QPushButton("Add Pass")
-        #self.__new_editor_btn.setFixedWidth(50)
-        #self.__new_editor_btn.setFixedHeight(50)
+        self.__new_editor_btn = QPushButton("")
+        self.__new_editor_btn.setStyleSheet("border-image: url(" + self.__appctx.get_resource('add.png') + ")")
+        self.__new_editor_btn.setFixedWidth(24)
+        self.__new_editor_btn.setFixedHeight(24)
         self.__new_editor_btn.clicked.connect(self.__new_editor_action)
         self.__new_editor_btn.setFont(self.__myFont)
         con_layout.addWidget(self.__new_editor_btn)
@@ -541,9 +542,17 @@ class CustomMainWindow(QMainWindow):
 
 ''' End Class '''
 
+if hasattr(Qt, 'AA_EnableHighDpiScaling'):
+    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
+    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+
 if __name__ == '__main__':
     appctxt = CustomAppCTX()       # 1. Instantiate ApplicationContext
     app = appctxt.app
+    print(f"Using AA_EnableHighDpiScaling > {QApplication.testAttribute(Qt.AA_EnableHighDpiScaling)}")
+    print(f"Using AA_UseHighDpiPixmaps    > {QApplication.testAttribute(Qt.AA_UseHighDpiPixmaps)}")
+    
     myGUI = CustomMainWindow(appctxt, app)
 
     exit_code = appctxt.app.exec_()      # 2. Invoke appctxt.app.exec_()
