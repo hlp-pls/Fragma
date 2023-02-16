@@ -33,12 +33,14 @@ class MGL_WINDOW(mglw.WindowConfig):
         for __fbo in self.__fbos:
             if isinstance(__fbo, MGL_FBO):
                 __fbo.release()
+                __fbo = None
 
         self.__fbos = []
-        print(self.ctx)
+        #print(self.ctx)
+        print("EDITORS LENGTH", len(editors))
         has_exception = False
         for i, editor in enumerate(editors):
-            print(editor.text())
+            #print(editor.text())
             try:
                 new_fbo = MGL_FBO(
                     ctx = self.ctx, 
@@ -46,7 +48,7 @@ class MGL_WINDOW(mglw.WindowConfig):
                     fragment_shader = editor.text(), 
                     enable_backbuffer = True,
                     window = self.window,
-                    name="buffer_"+str(editor.objectName))
+                    name="buffer_"+str(editor.objectName()))
                 self.__fbos.append(new_fbo)
                 #self.app.clearConsole()
             except Exception as e:
@@ -65,8 +67,8 @@ class MGL_WINDOW(mglw.WindowConfig):
             # set each pass texture as buffer in each other passes
             for fbo in self.__fbos:
                 for _fbo in self.__fbos:
-                    if fbo != _fbo:
-                        fbo.set_texture_uniform_auto(_fbo.texture, _fbo.name)
+                    if fbo.pass_name != _fbo.pass_name:
+                        fbo.set_texture_uniform_auto(_fbo.texture, _fbo.pass_name)
 
             self.do_render()
         else:

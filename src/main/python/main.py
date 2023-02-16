@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QMainWindow
 
 import sys
 import os
+import re  
 from pathlib import Path
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -283,10 +284,11 @@ class CustomMainWindow(QMainWindow):
         texts = ""
         editors = self.__editor_tabs.findChildren(QsciScintilla)
         for editor in editors:
+            if editor.parent != None:
             #print(editor.text())
-            texts += editor.text() + MARKER
+                texts += editor.text() + MARKER
 
-        print(texts)
+        #print(texts)
         filename = self.__file_dialog.getSaveFileName(self, '', '', "Fragma file (*.fragma)")
         print(filename)
         with open(filename[0], 'w') as f:
@@ -298,8 +300,13 @@ class CustomMainWindow(QMainWindow):
         filename = self.__file_dialog.getOpenFileName(self, '', '', "Fragma file (*.fragma)")
         file = open(filename[0], 'r')
         file_data = file.read()
-        print(file_data)
+        #print(file_data)
 
+        editors = self.__editor_tabs.findChildren(QsciScintilla)
+        for editor in editors:
+            editor.setParent(None)
+            editor.deleteLater()
+        
         self.__editor_tabs.clear()
         self.__editor_tab_count = 0
         fragments = file_data.split(MARKER)
@@ -477,7 +484,15 @@ class CustomMainWindow(QMainWindow):
     
     def __remove_editor_action(self, index):
         print("remove editor", index)
-        self.__editor_tabs.removeTab(index)
+        #self.__editor_tabs.removeTab(index)
+        tab = self.__editor_tabs.widget(index)
+        editors = tab.findChildren(QsciScintilla)
+        for editor in editors:
+            editor.setParent(None)
+            editor.deleteLater()
+
+        tab.setParent(None)
+        tab.deleteLater()
         if self.__editor_tabs.count() == 0:
             self.__editor_tab_count = 0
 
@@ -514,7 +529,9 @@ class CustomMainWindow(QMainWindow):
             editor.setObjectName(str(self.__editor_tab_count))
             
             if "text" in kwargs:
-                editor.setText(kwargs["text"])
+                editor_text = kwargs["text"]
+                #editor_text = re.sub("buffer_.","buffer_"+str(editor.objectName),editor_text)
+                editor.setText(editor_text)
             else:
                 editor.setText(default_code)
 

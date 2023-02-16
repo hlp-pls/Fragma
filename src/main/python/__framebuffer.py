@@ -42,7 +42,7 @@ class MGL_FBO:
         self.window = kwargs["window"]
         #print(self.window)
 
-        self.name = kwargs["name"]
+        self.pass_name = kwargs["name"]
     
         self.texture = self.ctx.texture(self.size, components=4, dtype="f4")
         self.fbo = self.ctx.framebuffer(self.texture)
@@ -83,6 +83,7 @@ class MGL_FBO:
         self.rndr_prog = self.ctx.program(vertex_shader=self.quad_vertex_shader, fragment_shader=self.copier_fragment_shader)
         self.rndr_vao = self.ctx.vertex_array(self.rndr_prog,self.content)
         self.rndr_target_uniform = self.rndr_prog.get('copy_target', FakeUniform())
+        self.rndr_target_uniform.value = 0
 
         #https://github.com/moderngl/moderngl/issues/459
         #https://realpython.com/python-keyerror/
@@ -102,6 +103,11 @@ class MGL_FBO:
 
             self.backbuffer_uniform = self.prog.get('backbuffer', FakeUniform())
             self.copy_target_uniform = self.bck_prog.get('copy_target', FakeUniform())
+
+            self.backbuffer_uniform.value = 0
+            self.copy_target_uniform.value = 0
+            
+            
     
         self.textures = {}
         self.texture_buffers = {}
@@ -133,6 +139,7 @@ class MGL_FBO:
         im_WIDTH, im_HEIGHT, im_DATA = im.size[0], im.size[1], im.convert('RGBA').tobytes("raw", "RGBA", 0, -1)
         self.init_texture = self.ctx.texture((im.size[0], im.size[1]), components=4, data=im_DATA)
         self.init_texture_uniform = self.prog.get('init_texture', FakeUniform())
+        self.init_texture_uniform.value = 1
     
     def clear(self):
         self.fbo.clear()
@@ -155,32 +162,32 @@ class MGL_FBO:
         #         self.window.use()
         #     else:
         #         self.fbo.use()
+        #self.fbo.clear()
         self.fbo.use()
 
         for (name, texture) in self.textures.items():
-            #print(name, texture, self.texture_uniforms[name].value)
+            print(str(name), self.texture_uniforms[name].value)
             textureid = self.texture_uniforms[name].value
-            #self.textures[name].use(textureid)
-            self.texture_uniforms[name].value = textureid
+            self.textures[name].use(location=textureid)
     
         if "time" in kwargs:
             self.time.value = kwargs['time']
         
         if self.enable_backbuffer == True:
-            self.bck_texture.use(1)
-            self.backbuffer_uniform.value = 1
+            self.bck_texture.use(location=0)
+            # not sure why, but this does not work properly when using multipass if location is 2
+            # for some reason location 0 seems to works okay, even though it is same as copy_target     
         
         if self.init_texture:
-            self.init_texture.use(2)
-            self.init_texture_uniform.value = 2
+            self.init_texture.use(location=1)
         
         self.vao.render(moderngl.TRIANGLE_STRIP)
+        #self.bck_fbo.clear()
 
         if self.enable_backbuffer == True:
             self.bck_fbo.use()
 
-            self.texture.use(0)
-            self.copy_target_uniform.value = 0
+            self.texture.use(location=0)
         
             self.bck_vao.render(moderngl.TRIANGLE_STRIP)
 
@@ -188,7 +195,9 @@ class MGL_FBO:
             if kwargs["render_to_window"] == True:
                 self.window.use()
 
-                self.texture.use(0)
-                self.rndr_target_uniform.value = 0
+                self.texture.use(location=0)
 
                 self.rndr_vao.render(moderngl.TRIANGLE_STRIP)
+                #self.clear()
+                
+        
