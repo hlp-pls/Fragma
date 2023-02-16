@@ -123,12 +123,12 @@ QTabBar::tab:!selected {
 }
 
 QTabBar::close-button {
-    image: url(resource:close-tab.png);
+    image: url(%(close_tab)s);
     subcontrol-position: right;
 }
 
 QTabBar::close-button:hover {
-    image: url(resource:close-tab-hover.png);
+    image: url(%(close_tab_hover)s);
 }
 
 QLineEdit#compression {

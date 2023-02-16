@@ -55,16 +55,27 @@ class CustomMainWindow(QMainWindow):
         self.__app = App
         print(self.__app)
 
-        rootdir = os.path.dirname(os.path.abspath(__file__))
-        rootdir = os.path.dirname(rootdir)
-        print(rootdir)
-        QDir.addSearchPath('resource',os.path.join(rootdir,"resources/base"))
+        # rootdir = self.__appctx.get_resource()
+        # rootdir = Path(os.path.dirname(rootdir)).as_posix()
+        # print(rootdir)
 
+        #---> FBS does not allow this --> this will work with run, but not when freezing or releasing
+        # https://stackoverflow.com/questions/55930797/how-to-reference-resource-file-in-pyqt-stylesheet-using-fbs
+        #QDir.addSearchPath('resource',os.path.join(rootdir,"resources/base"))
+        #cssfile = QFile('resource:__style.qss')
+        #cssfile.open(QFile.ReadOnly | QFile.Text)
+        #self.__app.setStyleSheet(str(cssfile.readAll(), 'utf-8'))
 
-        #self.__app.setStyleSheet(Path(self.__appctx.get_resource('__style.qss')).read_text())
-        cssfile = QFile('resource:__style.qss')
-        cssfile.open(QFile.ReadOnly | QFile.Text)
-        self.__app.setStyleSheet(str(cssfile.readAll(), 'utf-8'))
+        close_tab = Path(self.__appctx.get_resource("close-tab.png")).as_posix()
+        close_tab_hover = Path(self.__appctx.get_resource("close-tab-hover.png")).as_posix()
+
+        print(close_tab, close_tab_hover)
+        QSS_text = Path(self.__appctx.get_resource('__style.qss')).read_text()
+        QSS_text = QSS_text % {"close_tab": close_tab, "close_tab_hover" : close_tab_hover}
+        #QSS_text = QSS_text % {"close_tab_hover": close_tab_hover}
+        print(QSS_text)
+        self.__app.setStyleSheet(QSS_text)
+        
         # Window setup
         # --------------
 
