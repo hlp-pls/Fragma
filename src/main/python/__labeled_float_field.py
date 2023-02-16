@@ -23,7 +23,7 @@ class LabelledFloatField(QWidget):
             layout.addWidget(self.label)
         
         self.lineEdit = QLineEdit(self)
-        self.lineEdit.setObjectName("LabelledFloatField")
+        #self.lineEdit.setObjectName("LabelledFloatField")
         self.lineEdit.setAttribute(Qt.WA_MacShowFocusRect, 0) # this gets rid of outline on focus
         self.lineEdit.setFixedWidth(50)
         self.lineEdit.setFont(font)

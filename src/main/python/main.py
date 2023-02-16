@@ -54,7 +54,6 @@ class CustomMainWindow(QMainWindow):
         self.__appctx = AppCTX
         self.__app = App
         print(self.__app)
-        
 
         rootdir = os.path.dirname(os.path.abspath(__file__))
         rootdir = os.path.dirname(rootdir)
@@ -406,7 +405,13 @@ class CustomMainWindow(QMainWindow):
     def __run_btn_action(self):
         print("Run Button Clicked.")
         #print(self.__editor_tabs.findChildren(QsciScintilla))
-        print("TEST", len(self.__editor_tabs.findChildren(QLineEdit)))
+        #print("TEST", len(self.__editor_tabs.findChildren(QLineEdit)))
+        compressions = self.__editor_tabs.findChildren(QLineEdit)
+        for compression in compressions:
+            if float(compression.text()) <= 0.1:
+                compression.setText(str(0.1))
+            elif float(compression.text()) > 1.0:
+                compression.setText(str(1.0))
 
         max_size = int(self.__mgl_max_size[0] / self.pd_div.getValue())
         window_dimension_changed = False
@@ -432,7 +437,7 @@ class CustomMainWindow(QMainWindow):
                 ctx=self.__runner_window.ctx, 
                 wnd=self.__runner_window, 
                 app=self, 
-                pixel_density=self.__editor_tabs.findChildren(QLineEdit),#self.pd_div.getValue(),
+                pixel_density=compressions,#self.pd_div.getValue(),
                 fps=self.fps_div.getValue())
             self.__runner.__setup__(editors=self.__editor_tabs.findChildren(QsciScintilla))
         elif isinstance(self.__runner, MGL_WINDOW):
@@ -472,15 +477,20 @@ class CustomMainWindow(QMainWindow):
             editor_layout.setContentsMargins(0,0,0,0)
 
             pass_panel = QHBoxLayout()
-            pass_compression_input = LabelledFloatField('Compression', self.__myFont, 1.0)
+            pass_compression_input = LabelledFloatField('', self.__myFont, 1.0)
+            pass_compression_input.lineEdit.setObjectName('compression')
             #self.__editor_compressions.append(pass_compression_input)
             
+            pass_panel.addSpacing(13)
             pass_panel.addWidget(pass_compression_input.lineEdit)
-
+            #pass_panel.addLayout(pass_compression_input.layout)
+            pass_panel.addStretch(9)
+            
             editor_layout.addLayout(pass_panel)
             
             editor = QsciScintilla()
-            #editor.setObjectName("editor")
+            self.__editor_tab_count += 1
+            editor.setObjectName(str(self.__editor_tab_count))
             
             editor.setText(default_code)
             
@@ -519,7 +529,7 @@ class CustomMainWindow(QMainWindow):
             editor_layout.addWidget(editor)
             editor_frame.setLayout(editor_layout)
             #self.__editors_layout.addWidget(editor_frame)
-            self.__editor_tab_count += 1
+            
             self.__editor_tabs.addTab(editor_frame, str(self.__editor_tab_count) + "")
             #self.__editors_layout.addWidget(editor)
         else:

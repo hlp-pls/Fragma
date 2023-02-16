@@ -41,6 +41,8 @@ class MGL_FBO:
         self.enable_backbuffer = kwargs["enable_backbuffer"]
         self.window = kwargs["window"]
         #print(self.window)
+
+        self.name = kwargs["name"]
     
         self.texture = self.ctx.texture(self.size, components=4, dtype="f4")
         self.fbo = self.ctx.framebuffer(self.texture)
@@ -105,6 +107,7 @@ class MGL_FBO:
         self.texture_buffers = {}
         self.texture_uniforms = {}
         self.init_texture = None
+        self.texture_counter = 3
 
   
     def set_uniform(self, name, value):
@@ -116,6 +119,13 @@ class MGL_FBO:
             self.texture_uniforms[name] = self.prog.get(name, FakeUniform())
             self.textures[name] = texture
         self.texture_uniforms[name].value = id
+    
+    def set_texture_uniform_auto(self, texture, name):
+        if name not in self.textures:
+            self.texture_uniforms[name] = self.prog.get(name, FakeUniform())
+            self.textures[name] = texture
+        self.texture_uniforms[name].value = self.texture_counter
+        self.texture_counter += 1
 
     #https://stackoverflow.com/questions/64074990/using-pillow-image-tobytes-to-flip-the-image-and-swap-the-color-channels
     def set_init_img(self, path):

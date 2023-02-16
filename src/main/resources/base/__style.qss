@@ -130,3 +130,11 @@ QTabBar::close-button {
 QTabBar::close-button:hover {
     image: url(resource:close-tab-hover.png);
 }
+
+QLineEdit#compression {
+    background: #6e6e6e;
+    color: #ffffff;
+    height: 20px;
+    border-radius: 12px;
+    padding: 2px 8px;
+}

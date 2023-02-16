@@ -45,7 +45,8 @@ class MGL_WINDOW(mglw.WindowConfig):
                     size = (int(self.size[0]*float(self.pixel_density[i].text())),int(self.size[1]*float(self.pixel_density[i].text()))), 
                     fragment_shader = editor.text(), 
                     enable_backbuffer = True,
-                    window = self.window)
+                    window = self.window,
+                    name="buffer_"+str(editor.objectName))
                 self.__fbos.append(new_fbo)
                 #self.app.clearConsole()
             except Exception as e:
@@ -62,6 +63,10 @@ class MGL_WINDOW(mglw.WindowConfig):
             print(self.has_set)
 
             # set each pass texture as buffer in each other passes
+            for fbo in self.__fbos:
+                for _fbo in self.__fbos:
+                    if fbo != _fbo:
+                        fbo.set_texture_uniform_auto(_fbo.texture, _fbo.name)
 
             self.do_render()
         else:
