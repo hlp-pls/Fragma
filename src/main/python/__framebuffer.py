@@ -166,7 +166,7 @@ class MGL_FBO:
         self.fbo.use()
 
         for (name, texture) in self.textures.items():
-            print(str(name), self.texture_uniforms[name].value)
+            #print(str(name), self.texture_uniforms[name].value)
             textureid = self.texture_uniforms[name].value
             self.textures[name].use(location=textureid)
     

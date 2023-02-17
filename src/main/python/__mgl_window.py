@@ -40,7 +40,7 @@ class MGL_WINDOW(mglw.WindowConfig):
         print("EDITORS LENGTH", len(editors))
         has_exception = False
         for i, editor in enumerate(editors):
-            #print(editor.text())
+            print(editor.text(), "PD!!!",self.pixel_density[i].text())
             try:
                 new_fbo = MGL_FBO(
                     ctx = self.ctx, 
