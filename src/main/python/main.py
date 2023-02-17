@@ -301,11 +301,13 @@ class CustomMainWindow(QMainWindow):
         file = open(filename[0], 'r')
         file_data = file.read()
         #print(file_data)
+        for index in range(self.__editor_tabs.count()):
+            self.__remove_editor_action(index)
 
-        editors = self.__editor_tabs.findChildren(QsciScintilla)
-        for editor in editors:
-            editor.setParent(None)
-            editor.deleteLater()
+        # editors = self.__editor_tabs.findChildren(QsciScintilla)
+        # for editor in editors:
+        #     editor.setParent(None)
+        #     editor.deleteLater()
         
         self.__editor_tabs.clear()
         self.__editor_tab_count = 0
