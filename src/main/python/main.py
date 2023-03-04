@@ -55,6 +55,8 @@ import moderngl_window as mglw
 import moderngl_window.context.pyglet
 import glcontext
 
+from datetime import datetime
+
 import sys
 import os
 import re  
@@ -503,6 +505,12 @@ class CustomMainWindow(QMainWindow):
             self.showNormal()
 
     def __quit_btn_action(self):
+        current_start_time = datetime.now()
+        ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+        with open(ROOT_DIR+'/fragma_time_rec.txt', 'w') as f:
+            f.truncate(0) # emptying texts
+            f.seek(0)
+            f.write(str(current_start_time.strftime('%Y-%m-%d %H:%M:%S')))
         #lock.unlock()
         self.__app.quit()
         #sys.exit()
@@ -712,7 +720,34 @@ lock = FLOCK(ROOT_DIR+'/fragma.lock', True).acquire()
 # lock = QLockFile(ROOT_DIR + '/fragma.lock')
 # lock.setStaleLockTime(5000)
 
-if lock:
+current_start_time = datetime.now()
+#now.strftime('%Y-%m-%d %H:%M:%S')
+minimum_restart_time = 2
+too_soon_to_restart = False
+
+try:
+    with open(ROOT_DIR+'/fragma_time_rec.txt', 'r+') as f:
+        f_data = f.read()
+        print(f_data)
+        try:
+            previous_start_time = datetime.strptime(f_data, '%Y-%m-%d %H:%M:%S')
+            time_taken_to_restart = current_start_time - previous_start_time
+            print(time_taken_to_restart.seconds)
+            if int(time_taken_to_restart.seconds) < minimum_restart_time:
+                print('too soon to restart')
+                too_soon_to_restart = True
+        except Exception as e:
+            print("no start time record or something wrong", e)
+        f.truncate(0) # emptying texts
+        f.seek(0) # needed when rewriting after emptying
+        f.write(str(current_start_time.strftime('%Y-%m-%d %H:%M:%S')))
+except:
+    with open(ROOT_DIR+'/fragma_time_rec.txt', 'w') as f:
+        f.truncate(0) # emptying texts
+        f.seek(0)
+        f.write(str(current_start_time.strftime('%Y-%m-%d %H:%M:%S')))
+
+if lock and too_soon_to_restart == False:
 #if lock.tryLock(100):
     if hasattr(Qt, 'AA_EnableHighDpiScaling'):
         QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
