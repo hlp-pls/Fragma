@@ -43,6 +43,7 @@ class MGL_FBO:
         #print(self.window)
 
         self.pass_name = kwargs["name"]
+        self.pass_repetition = kwargs["pass_repetition"]
     
         self.texture = self.ctx.texture(self.size, components=4, dtype="f4")
         self.fbo = self.ctx.framebuffer(self.texture)
@@ -89,6 +90,7 @@ class MGL_FBO:
         #https://realpython.com/python-keyerror/
         self.time = self.prog.get('time', FakeUniform())
         self.resolution = self.prog.get('resolution', FakeUniform())
+        self.count = self.prog.get('count', FakeUniform())
 
         if self.resolution:
             self.resolution.value = self.size
@@ -156,48 +158,51 @@ class MGL_FBO:
         image.save(path, format='png')
 
     def render(self,**kwargs):
-        # if "render_to_window" in kwargs:
-        #     if kwargs["render_to_window"] == True:
-        #         #print("using window")
-        #         self.window.use()
-        #     else:
-        #         self.fbo.use()
-        #self.fbo.clear()
-        self.fbo.use()
+        for rep in range(self.pass_repetition):
+            # if "render_to_window" in kwargs:
+            #     if kwargs["render_to_window"] == True:
+            #         #print("using window")
+            #         self.window.use()
+            #     else:
+            #         self.fbo.use()
+            #self.fbo.clear()
+            self.fbo.use()
 
-        for (name, texture) in self.textures.items():
-            #print(str(name), self.texture_uniforms[name].value)
-            textureid = self.texture_uniforms[name].value
-            self.textures[name].use(location=textureid)
-    
-        if "time" in kwargs:
-            self.time.value = kwargs['time']
-        
-        if self.enable_backbuffer == True:
-            self.bck_texture.use(location=0)
-            # not sure why, but this does not work properly when using multipass if location is 2
-            # for some reason location 0 seems to works okay, even though it is same as copy_target     
-        
-        if self.init_texture:
-            self.init_texture.use(location=1)
-        
-        self.vao.render(moderngl.TRIANGLE_STRIP)
-        #self.bck_fbo.clear()
+            self.count.value = float(rep)
 
-        if self.enable_backbuffer == True:
-            self.bck_fbo.use()
-
-            self.texture.use(location=0)
+            for (name, texture) in self.textures.items():
+                #print(str(name), self.texture_uniforms[name].value)
+                textureid = self.texture_uniforms[name].value
+                self.textures[name].use(location=textureid)
         
-            self.bck_vao.render(moderngl.TRIANGLE_STRIP)
+            if "time" in kwargs:
+                self.time.value = kwargs['time']
+            
+            if self.enable_backbuffer == True:
+                self.bck_texture.use(location=0)
+                # not sure why, but this does not work properly when using multipass if location is 2
+                # for some reason location 0 seems to works okay, even though it is same as copy_target     
+            
+            if self.init_texture:
+                self.init_texture.use(location=1)
+            
+            self.vao.render(moderngl.TRIANGLE_STRIP)
+            #self.bck_fbo.clear()
 
-        if "render_to_window" in kwargs:
-            if kwargs["render_to_window"] == True:
-                self.window.use()
+            if self.enable_backbuffer == True:
+                self.bck_fbo.use()
 
                 self.texture.use(location=0)
+            
+                self.bck_vao.render(moderngl.TRIANGLE_STRIP)
 
-                self.rndr_vao.render(moderngl.TRIANGLE_STRIP)
-                #self.clear()
+            if "render_to_window" in kwargs:
+                if kwargs["render_to_window"] == True:
+                    self.window.use()
+
+                    self.texture.use(location=0)
+
+                    self.rndr_vao.render(moderngl.TRIANGLE_STRIP)
+                    #self.clear()
                 
         

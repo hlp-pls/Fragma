@@ -200,6 +200,7 @@ class CustomMainWindow(QMainWindow):
         panel_layout.addLayout(whlayout)
 
         con_layout = QHBoxLayout()
+
         # Place Run button
         self.__run_btn = QPushButton("")
         self.__run_btn.setStyleSheet("border-image: url(" + self.__appctx.get_resource('play.png') + ")")
@@ -220,6 +221,8 @@ class CustomMainWindow(QMainWindow):
         con_layout.addWidget(self.__stop_btn)
         con_layout.setSpacing(10)
 
+        
+
         # Place New Editor button
         self.__new_editor_btn = QPushButton("")
         self.__new_editor_btn.setStyleSheet("border-image: url(" + self.__appctx.get_resource('add.png') + ")")
@@ -229,6 +232,28 @@ class CustomMainWindow(QMainWindow):
         self.__new_editor_btn.setFont(self.__myFont)
         con_layout.addWidget(self.__new_editor_btn)
         con_layout.addStretch(8)
+
+        # Place Capture button
+        self.__capture_btn = QPushButton("")
+        self.__capture_btn.setStyleSheet("border-image: url(" + self.__appctx.get_resource('capture.png') + ")")
+        self.__capture_btn.setFixedWidth(24)
+        self.__capture_btn.setFixedHeight(24)
+        self.__capture_btn.clicked.connect(self.__capture_btn_action)
+        self.__capture_btn.setFont(self.__myFont)
+        con_layout.addWidget(self.__capture_btn)
+        con_layout.setSpacing(10)
+        
+        # Place Rec button
+        self.__rec_btn = QPushButton("")
+        self.__rec_btn.setStyleSheet("border-image: url(" + self.__appctx.get_resource('rec.png') + ")")
+        self.__rec_btn.setFixedWidth(24)
+        self.__rec_btn.setFixedHeight(24)
+        self.__rec_btn.clicked.connect(self.__rec_btn_action)
+        self.__rec_btn.setFont(self.__myFont)
+        con_layout.addWidget(self.__rec_btn)
+        
+
+       
 
         # self.__projnm_btn = QLineEdit()
         # self.__projnm_btn.setMaximumWidth(200)
@@ -427,16 +452,29 @@ class CustomMainWindow(QMainWindow):
     def __quit_btn_action(self):
         sys.exit()
 
-    def __run_btn_action(self):
+    def __run_btn_action(self, **kwargs):
         print("Run Button Clicked.")
+
+        recording = None
+        if "recording" in kwargs:
+            recording = kwargs["recording"]
+            #print(kwargs["recording"])
+
         #print(self.__editor_tabs.findChildren(QsciScintilla))
         #print("TEST", len(self.__editor_tabs.findChildren(QLineEdit)))
-        compressions = self.__editor_tabs.findChildren(QLineEdit)
+        compressions = self.__editor_tabs.findChildren(QLineEdit, 'compression')
         for compression in compressions:
             if float(compression.text()) <= 0.1:
                 compression.setText(str(0.1))
             elif float(compression.text()) > 1.0:
                 compression.setText(str(1.0))
+
+        repetitions = self.__editor_tabs.findChildren(QLineEdit, 'repetition')
+        for repetition in repetitions:
+            if int(repetition.text()) <= 1:
+                repetition.setText(str(1))
+            elif int(repetition.text()) > 50:
+                repetition.setText(str(50))
 
         max_size = int(self.__mgl_max_size[0] / self.pd_div.getValue())
         window_dimension_changed = False
@@ -463,7 +501,9 @@ class CustomMainWindow(QMainWindow):
                 wnd=self.__runner_window, 
                 app=self, 
                 pixel_density=compressions,#self.pd_div.getValue(),
-                fps=self.fps_div.getValue())
+                pass_repetitions=repetitions,
+                fps=self.fps_div.getValue(),
+                recording=recording)
             self.__runner.__setup__(editors=self.__editor_tabs.findChildren(QsciScintilla))
         elif isinstance(self.__runner, MGL_WINDOW):
             self.__runner.close_window()
@@ -477,32 +517,52 @@ class CustomMainWindow(QMainWindow):
         prev_txt = self.__console.toPlainText()
         new_txt = str(prev_txt) + "\n" + str(message)
         self.__console.setText(str(new_txt))
-
+    
     def __stop_btn_action(self):
         self.setConsole("")
         if isinstance(self.__runner, MGL_WINDOW):
             self.__runner.close_window()
             self.__runner = None  
-    
+
+    def __rec_btn_action(self):
+        print("record button clicked!")
+        self.__stop_btn_action()
+        duration, ok = QInputDialog.getDouble(self, 'Record Video', 'Recording Duration:')
+        if ok:
+            print(float(duration))
+            filename = self.__file_dialog.getSaveFileName(self, '', '', "(*.mp4)")
+            print(filename)
+            self.__run_btn_action(recording={
+                "filename": filename[0],
+                "duration": duration
+            })
+        else:
+            print("recording canceled")
+
+    def __capture_btn_action(self):
+        print("capture button clicked!")
+
     def __remove_editor_action(self, index):
         print("remove editor", index)
         #self.__editor_tabs.removeTab(index)
         tab = self.__editor_tabs.widget(index)
-        editors = tab.findChildren(QsciScintilla)
-        for editor in editors:
-            editor.setParent(None)
-            editor.deleteLater()
+        #--> check if tab exists before using it
+        if tab is not None:
+            editors = tab.findChildren(QsciScintilla)
+            for editor in editors:
+                editor.setParent(None)
+                editor.deleteLater()
 
-        tab.setParent(None)
-        tab.deleteLater()
-        if self.__editor_tabs.count() == 0:
-            self.__editor_tab_count = 0
+            tab.setParent(None)
+            tab.deleteLater()
+            if self.__editor_tabs.count() == 0:
+                self.__editor_tab_count = 0
 
-        # if self.__editor_tabs.count() > 1:
-        #     print("remove editor", index)
-        #     self.__editor_tabs.removeTab(index)
-        # else:
-        #     print("just one left")
+            # if self.__editor_tabs.count() > 1:
+            #     print("remove editor", index)
+            #     self.__editor_tabs.removeTab(index)
+            # else:
+            #     print("just one left")
 
     def __new_editor_action(self, **kwargs):
         print("New Editor Button Clicked.")
@@ -517,11 +577,17 @@ class CustomMainWindow(QMainWindow):
             pass_panel = QHBoxLayout()
             pass_compression_input = LabelledFloatField('', self.__myFont, 1.0)
             pass_compression_input.lineEdit.setObjectName('compression')
+
+            pass_repetition_input = LabelledIntField('', self.__myFont, 1)
+            pass_repetition_input.lineEdit.setObjectName('repetition')
+            pass_repetition_input.lineEdit.setFixedWidth(50)
             #self.__editor_compressions.append(pass_compression_input)
             
             pass_panel.addSpacing(13)
             pass_panel.addWidget(pass_compression_input.lineEdit)
             #pass_panel.addLayout(pass_compression_input.layout)
+            pass_panel.addSpacing(0)
+            pass_panel.addWidget(pass_repetition_input.lineEdit)
             pass_panel.addStretch(9)
             
             editor_layout.addLayout(pass_panel)

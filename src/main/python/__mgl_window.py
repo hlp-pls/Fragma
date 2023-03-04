@@ -1,6 +1,8 @@
 from __framebuffer import MGL_FBO
 import moderngl_window as mglw
 import time
+import numpy as np
+import moviepy.editor as mvp
 
 class MGL_WINDOW(mglw.WindowConfig):
     
@@ -15,11 +17,16 @@ class MGL_WINDOW(mglw.WindowConfig):
         self.window = kwargs["wnd"]
         self.app = kwargs["app"]
         self.pixel_density = kwargs["pixel_density"]
+        self.pass_repetitions = kwargs["pass_repetitions"]
         self.timer = mglw.Timer()
         self.timer.start()
         self.fps = kwargs["fps"]
         self.fps_limit = 1 / self.fps
         self.has_closed = False
+        self.recording = kwargs["recording"]
+
+        #self.__stop_btn_action = self.app.__stop_btn_action
+        #print("app", kwargs["app"].__stop_btn_action)
         #pyglet.app.run()
         #self.window = pyglet.app.window
         print(self.window)
@@ -44,11 +51,12 @@ class MGL_WINDOW(mglw.WindowConfig):
             try:
                 new_fbo = MGL_FBO(
                     ctx = self.ctx, 
-                    size = (int(self.size[0]*float(self.pixel_density[i].text())),int(self.size[1]*float(self.pixel_density[i].text()))), 
+                    size = (int(self.size[0]*2*float(self.pixel_density[i].text())),int(self.size[1]*2*float(self.pixel_density[i].text()))), 
                     fragment_shader = editor.text(), 
                     enable_backbuffer = True,
                     window = self.window,
-                    name="buffer_"+str(editor.objectName()))
+                    name="buffer_"+str(editor.objectName()),
+                    pass_repetition=int(self.pass_repetitions[i].text()))
                 self.__fbos.append(new_fbo)
                 #self.app.clearConsole()
             except Exception as e:
@@ -69,8 +77,13 @@ class MGL_WINDOW(mglw.WindowConfig):
                 for _fbo in self.__fbos:
                     if fbo.pass_name != _fbo.pass_name:
                         fbo.set_texture_uniform_auto(_fbo.texture, _fbo.pass_name)
-
-            self.do_render()
+            
+            if self.recording is None:
+                self.do_render(0.0)
+            else:
+                clip = mvp.VideoClip(self.do_render, duration=self.recording["duration"])
+                clip.write_videofile(self.recording["filename"], fps=60)
+                print("recording completed")
         else:
             self.window.close()
 
@@ -86,8 +99,23 @@ class MGL_WINDOW(mglw.WindowConfig):
             if isinstance(__fbo, MGL_FBO):
                 mx = x / self.size[0]
                 my = 1.0 - y / self.size[1]
+                dtx =  dx / self.size[0]
+                dty = 1.0 - dy / self.size[1]
                 #print(x, y)
-                __fbo.set_uniform("mouse", [mx, my])   
+                __fbo.set_uniform("mouse", [mx, my])
+                __fbo.set_uniform("mousedt", [dtx, dty])
+
+    def mouse_release_event(self, x, y, button):
+        print("mouse released!")
+        for __fbo in self.__fbos:
+            if isinstance(__fbo, MGL_FBO):
+                __fbo.set_uniform("mousedown", False)
+    
+    def mouse_press_event(self, x, y, button):
+        print("mouse pressed!")
+        for __fbo in self.__fbos:
+            if isinstance(__fbo, MGL_FBO):
+                __fbo.set_uniform("mousedown", True)
 
     def close(self):
         #print(self.window.is_closing)
@@ -96,19 +124,33 @@ class MGL_WINDOW(mglw.WindowConfig):
         if self.window.is_closing == False:
             self.window.close()
 
-    def do_render(self):
+    def do_render(self, t):
         while not self.window.is_closing:
-            time.sleep(self.fps_limit)
+
+            if self.recording is None:
+                time.sleep(self.fps_limit)
+            #else:
+                #self.timer.time = t
+
             current_time = self.timer.time
             time_took_to_render = current_time - self.prev_time
             if time_took_to_render >= self.fps_limit:
                 self.window.clear()
+                last_fbo_ref = None
                 if self.has_set == True:
                     for i, __fbo in enumerate(self.__fbos):
                         if isinstance(__fbo, MGL_FBO):
                             if i == len(self.__fbos) - 1:
+                                last_fbo_ref = __fbo
                                 __fbo.render(time=self.timer.time, render_to_window=True)
                             else:
                                 __fbo.render(time=self.timer.time, render_to_window=False)
                 self.window.swap_buffers()
-                self.prev_time = current_time   
+                self.prev_time = current_time
+
+                if self.recording is not None:
+                    img_buf = last_fbo_ref.fbo.read()
+                    img_width = last_fbo_ref.size[0]
+                    img_height = last_fbo_ref.size[1]
+                    img = np.frombuffer(img_buf, np.uint8).reshape(img_height, img_width, 3)[::-1]
+                    return img   

@@ -6,3 +6,5 @@ pyglet
 moderngl
 moderngl-window
 glcontext
+moviepy
+numpy

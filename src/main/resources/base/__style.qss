@@ -131,10 +131,31 @@ QTabBar::close-button:hover {
     image: url(%(close_tab_hover)s);
 }
 
-QLineEdit#compression {
+QLineEdit#compression, QLineEdit#repetition {
     background: #6e6e6e;
     color: #ffffff;
     height: 20px;
     border-radius: 12px;
     padding: 2px 8px;
+}
+
+QInputDialog QDoubleSpinBox {
+    background: #ffffff;
+    color: black;
+}
+
+QInputDialog QDoubleSpinBox:focus {
+    color: black;
+}
+
+QInputDialog QDoubleSpinBox::up-button {
+    width: 0;
+}
+
+QInputDialog QDoubleSpinBox::down-button {
+    width: 0;
+}
+
+QInputDialog QPushButton {
+    background: #ffffff;
 }
