@@ -5,6 +5,9 @@ import numpy as np
 import moviepy.editor as mvp
 import sys
 
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+
 class MGL_WINDOW(mglw.WindowConfig):
     
     def __init__(self, **kwargs):
@@ -86,7 +89,11 @@ class MGL_WINDOW(mglw.WindowConfig):
                 clip.write_videofile(self.recording["filename"], fps=60)
                 print("recording completed")
                 # --> error : window opens for a second time
-                # use lock file
+                # use lock file --> done
+                # --> checks closed time and stops restarting if time elapsed is shorter than a given time
+                record_done_mssg = QMessageBox()
+                record_done_mssg.setText('Recording Completed')
+                record_done_mssg.exec()
         else:
             self.window.close()
 
