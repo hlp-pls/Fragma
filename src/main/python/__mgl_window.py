@@ -3,6 +3,7 @@ import moderngl_window as mglw
 import time
 import numpy as np
 import moviepy.editor as mvp
+import sys
 
 class MGL_WINDOW(mglw.WindowConfig):
     
@@ -84,6 +85,8 @@ class MGL_WINDOW(mglw.WindowConfig):
                 clip = mvp.VideoClip(self.do_render, duration=self.recording["duration"])
                 clip.write_videofile(self.recording["filename"], fps=60)
                 print("recording completed")
+                # --> error : window opens for a second time
+                # use lock file
         else:
             self.window.close()
 

@@ -2,6 +2,59 @@ from fbs_runtime.application_context import cached_property
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
 from PyQt5.QtWidgets import QMainWindow
 
+#--> imports for moviepy packaging : https://github.com/Zulko/moviepy/issues/591
+import imageio
+import imageio_ffmpeg
+import PIL
+import decorator
+import tqdm
+import numpy
+import moviepy
+
+from moviepy.audio.fx.audio_fadein import audio_fadein
+from moviepy.audio.fx.audio_fadeout import audio_fadeout
+from moviepy.audio.fx.audio_left_right import audio_left_right
+from moviepy.audio.fx.audio_loop import audio_loop
+from moviepy.audio.fx.audio_normalize import audio_normalize
+from moviepy.audio.fx.volumex import volumex
+
+from moviepy.video.fx.accel_decel import accel_decel
+from moviepy.video.fx.blackwhite import blackwhite
+from moviepy.video.fx.blink import blink
+from moviepy.video.fx.colorx import colorx
+from moviepy.video.fx.crop import crop
+from moviepy.video.fx.even_size import even_size
+from moviepy.video.fx.fadein import fadein
+from moviepy.video.fx.fadeout import fadeout
+from moviepy.video.fx.freeze import freeze
+from moviepy.video.fx.freeze_region import freeze_region
+from moviepy.video.fx.gamma_corr import gamma_corr
+from moviepy.video.fx.headblur import headblur
+from moviepy.video.fx.invert_colors import invert_colors
+from moviepy.video.fx.loop import loop
+from moviepy.video.fx.lum_contrast import lum_contrast
+from moviepy.video.fx.make_loopable import make_loopable
+from moviepy.video.fx.margin import margin
+from moviepy.video.fx.mask_and import mask_and
+from moviepy.video.fx.mask_color import mask_color
+from moviepy.video.fx.mask_or import mask_or
+from moviepy.video.fx.mirror_x import mirror_x
+from moviepy.video.fx.mirror_y import mirror_y
+from moviepy.video.fx.painting import painting
+from moviepy.video.fx.resize import resize
+from moviepy.video.fx.rotate import rotate
+from moviepy.video.fx.scroll import scroll
+from moviepy.video.fx.speedx import speedx
+from moviepy.video.fx.supersample import supersample
+from moviepy.video.fx.time_mirror import time_mirror
+from moviepy.video.fx.time_symmetrize import time_symmetrize
+
+#--> imports for mgl packaging
+import moderngl
+import moderngl_window as mglw
+import moderngl_window.context.pyglet
+import glcontext
+
 import sys
 import os
 import re  
@@ -10,14 +63,14 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.Qsci import *
-import moderngl
-import moderngl_window as mglw
-import moderngl_window.context.pyglet
-import glcontext
+
 from __lexer import GLSLLexer
 from __mgl_window import MGL_WINDOW
 from __labeled_int_field import LabelledIntField
 from __labeled_float_field import LabelledFloatField
+
+#--> LOCK FILE
+from __pid_lock import FLOCK
 
 default_code = '''#version 330
 out vec4 outputColor;
@@ -450,7 +503,9 @@ class CustomMainWindow(QMainWindow):
             self.showNormal()
 
     def __quit_btn_action(self):
-        sys.exit()
+        #lock.unlock()
+        self.__app.quit()
+        #sys.exit()
 
     def __run_btn_action(self, **kwargs):
         print("Run Button Clicked.")
@@ -527,7 +582,8 @@ class CustomMainWindow(QMainWindow):
     def __rec_btn_action(self):
         print("record button clicked!")
         self.__stop_btn_action()
-        duration, ok = QInputDialog.getDouble(self, 'Record Video', 'Recording Duration:')
+        # TODO : maybe make a custom qwidget window popup
+        duration, ok = QInputDialog.getDouble(self, 'Record Video', 'Recording Duration:', flags=Qt.FramelessWindowHint)
         if ok:
             print(float(duration))
             filename = self.__file_dialog.getSaveFileName(self, '', '', "(*.mp4)")
@@ -650,18 +706,46 @@ class CustomMainWindow(QMainWindow):
 
 ''' End Class '''
 
-if hasattr(Qt, 'AA_EnableHighDpiScaling'):
-    QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
-if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
-    QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+print(ROOT_DIR)
+lock = FLOCK(ROOT_DIR+'/fragma.lock', True).acquire()
+# lock = QLockFile(ROOT_DIR + '/fragma.lock')
+# lock.setStaleLockTime(5000)
 
-if __name__ == '__main__':
-    appctxt = CustomAppCTX()       # 1. Instantiate ApplicationContext
-    app = appctxt.app
-    print(f"Using AA_EnableHighDpiScaling > {QApplication.testAttribute(Qt.AA_EnableHighDpiScaling)}")
-    print(f"Using AA_UseHighDpiPixmaps    > {QApplication.testAttribute(Qt.AA_UseHighDpiPixmaps)}")
-    
-    myGUI = CustomMainWindow(appctxt, app)
+if lock:
+#if lock.tryLock(100):
+    if hasattr(Qt, 'AA_EnableHighDpiScaling'):
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+    if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
+        QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
-    exit_code = appctxt.app.exec_()      # 2. Invoke appctxt.app.exec_()
-    sys.exit(exit_code)
+    if __name__ == '__main__':
+        appctxt = CustomAppCTX()       # 1. Instantiate ApplicationContext
+        app = appctxt.app
+        print(f"Using AA_EnableHighDpiScaling > {QApplication.testAttribute(Qt.AA_EnableHighDpiScaling)}")
+        print(f"Using AA_UseHighDpiPixmaps    > {QApplication.testAttribute(Qt.AA_UseHighDpiPixmaps)}")
+        
+        myGUI = CustomMainWindow(appctxt, app)
+
+        exit_code = appctxt.app.exec_()      # 2. Invoke appctxt.app.exec_()
+        sys.exit(exit_code)
+else:
+    print("locked!")
+    sys.exit()
+
+# if __name__ == '__main__':
+#     appctxt = CustomAppCTX()       # 1. Instantiate ApplicationContext
+#     lock = FLOCK(appctxt.get_resource('fragma.lock'), True).acquire()
+#     if lock:
+#         app = appctxt.app
+#         print(f"Using AA_EnableHighDpiScaling > {QApplication.testAttribute(Qt.AA_EnableHighDpiScaling)}")
+#         print(f"Using AA_UseHighDpiPixmaps    > {QApplication.testAttribute(Qt.AA_UseHighDpiPixmaps)}")
+        
+#         myGUI = CustomMainWindow(appctxt, app)
+
+#         exit_code = appctxt.app.exec_()      # 2. Invoke appctxt.app.exec_()
+#         sys.exit(exit_code)
+#     else:
+#         print("locked!")
+#         sys.exit()
+        

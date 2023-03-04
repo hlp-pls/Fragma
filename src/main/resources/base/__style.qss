@@ -139,23 +139,26 @@ QLineEdit#compression, QLineEdit#repetition {
     padding: 2px 8px;
 }
 
-QInputDialog QDoubleSpinBox {
+QDialog QDoubleSpinBox {
     background: #ffffff;
     color: black;
+    border-radius: 12px;
+    padding: 2px 8px;
+    height: 20px;
 }
 
-QInputDialog QDoubleSpinBox:focus {
+QDialog QDoubleSpinBox:focus {
     color: black;
 }
 
-QInputDialog QDoubleSpinBox::up-button {
+QDialog QDoubleSpinBox::up-button {
     width: 0;
 }
 
-QInputDialog QDoubleSpinBox::down-button {
+QDialog QDoubleSpinBox::down-button {
     width: 0;
 }
 
-QInputDialog QPushButton {
+QDialog QPushButton {
     background: #ffffff;
 }
