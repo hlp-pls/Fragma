@@ -512,6 +512,7 @@ class CustomMainWindow(QMainWindow):
             f.seek(0)
             f.write(str(current_start_time.strftime('%Y-%m-%d %H:%M:%S')))
         #lock.unlock()
+        self.__stop_btn_action()
         self.__app.quit()
         #sys.exit()
 
@@ -605,6 +606,9 @@ class CustomMainWindow(QMainWindow):
 
     def __capture_btn_action(self):
         print("capture button clicked!")
+        if self.__runner is not None:
+            filename = self.__file_dialog.getSaveFileName(self, '', '', "(*.png)")
+            self.__runner.capture(filename[0])
 
     def __remove_editor_action(self, index):
         print("remove editor", index)

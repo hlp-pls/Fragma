@@ -1,5 +1,6 @@
 from __framebuffer import MGL_FBO
 import moderngl_window as mglw
+import moderngl_window.screenshot
 import time
 import numpy as np
 import moviepy.editor as mvp
@@ -81,7 +82,7 @@ class MGL_WINDOW(mglw.WindowConfig):
                 for _fbo in self.__fbos:
                     if fbo.pass_name != _fbo.pass_name:
                         fbo.set_texture_uniform_auto(_fbo.texture, _fbo.pass_name)
-            
+
             if self.recording is None:
                 self.do_render(0.0)
             else:
@@ -104,13 +105,29 @@ class MGL_WINDOW(mglw.WindowConfig):
         self.window.close()
         self.ctx.release()
 
+    def capture(self, path):
+        moderngl_window.screenshot.create(source=self.__fbos[len(self.__fbos)-1].fbo,name=path)
+
     def mouse_position_event(self, x, y, dx, dy):
+        mx = x / self.size[0]
+        my = 1.0 - y / self.size[1]
+        #dtx =  dx / self.size[0]
+        #dty = 1.0 - dy / self.size[1]
+        #print(dtx, dty)
         for __fbo in self.__fbos:
             if isinstance(__fbo, MGL_FBO):
-                mx = x / self.size[0]
-                my = 1.0 - y / self.size[1]
-                dtx =  dx / self.size[0]
-                dty = 1.0 - dy / self.size[1]
+                #print(x, y)
+                __fbo.set_uniform("mouse", [mx, my])
+                __fbo.set_uniform("mousedt", [0.0, 0.0])
+
+    def mouse_drag_event(self, x, y, dx, dy):
+        mx = x / self.size[0]
+        my = 1.0 - y / self.size[1]
+        dtx = dx / self.size[0]
+        dty = - dy / self.size[1]
+        #print(dtx, dty)
+        for __fbo in self.__fbos:
+            if isinstance(__fbo, MGL_FBO):
                 #print(x, y)
                 __fbo.set_uniform("mouse", [mx, my])
                 __fbo.set_uniform("mousedt", [dtx, dty])
