@@ -609,6 +609,7 @@ class CustomMainWindow(QMainWindow):
         if self.__runner is not None:
             filename = self.__file_dialog.getSaveFileName(self, '', '', "(*.png)")
             self.__runner.capture(filename[0])
+            self.__stop_btn_action()
 
     def __remove_editor_action(self, index):
         print("remove editor", index)
