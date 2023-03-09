@@ -1,0 +1,47 @@
+#version 330
+out vec4 outputColor;
+in vec2 UV;
+
+uniform sampler2D bckbuffer;
+uniform vec2 resolution;
+uniform vec2 mouse;
+uniform float time;
+
+void main() {
+	vec2 uv = UV;
+    vec2 rs = resolution;
+    uv=(uv-.5)*rs/rs.y;
+    vec2 ms = (mouse-.5)*rs/rs.y;
+    float sc = 60.;
+    
+    vec2 uv1 = uv;
+    float dst1 = fract(length((uv1-ms)*sc)+time*2.);
+    float sh1 = abs(dst1-.5);
+    sh1 = smoothstep(0.,.4,sh1);
+    
+    vec2 uv2 = uv + vec2(.01);
+    float dst2 = fract(length((uv2-ms)*sc)+time*2.);
+    float sh2 = abs(dst2-.5);
+    sh2 = smoothstep(0.,.4,sh2);
+   
+    vec2 uv3 = uv + vec2(-.005);
+    float dst3 = fract(length((uv3-ms)*sc)+time*2.);
+    float sh3 = abs(dst3-.5);
+    sh3 = smoothstep(0.,.4,sh3);
+    
+    vec3 col1 = vec3(sin(sh1 * 2.)*.5+.5,
+    sin(sh1 * 3.)*.5+.5,
+    sin(sh1 * 1.)*.5+.5);
+    vec3 col2 = vec3(0.,1.,.7);
+    vec3 col3 = vec3(1.,.2,.7);
+    vec3 bkcol = vec3(.6,1.,.0);
+    
+    vec3 col = bkcol;
+    
+    col = mix(col,col3,sh3);
+    col = mix(col,col2,1.-sh2);
+    col = mix(col,col1,sh1);
+    
+	outputColor = vec4(col,1.);
+}
+/**========END_OF_FRAGMENT========**/

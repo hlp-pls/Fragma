@@ -1,0 +1,33 @@
+#version 330
+out vec4 outputColor;
+in vec2 UV;
+
+uniform sampler2D bckbuffer;
+uniform vec2 resolution;
+uniform vec2 mouse;
+uniform float time;
+
+void main() {
+	vec2 uv = UV;
+    vec2 rs = resolution;
+    uv = (uv-.5)*rs/rs.y;
+    
+    vec3 camera = vec3(0.,1.,-1.);
+    vec3 lookat = vec3(0.,0.,0.);
+    
+    vec3 cam_dir = normalize(lookat - camera);
+    
+    float cam_screen_dst = 1.;
+    vec3 screen_center = camera + cam_dir * cam_screen_dst;
+    
+    vec3 screen_y_axis = cross(cam_dir,cross(cam_dir,vec3(0.,1.,0.))); 
+    vec3 screen_x_axis = cross(screen_y_axis, cam_dir);
+    
+    screen_y_axis = normalize(screen_y_axis);
+    screen_x_axis = normalize(screen_x_axis);
+    
+    vec3 screen_coords = screen_center + screen_y_axis * uv.y + screen_x_axis * uv.x;
+    
+	outputColor = vec4(screen_coords,1.);
+}
+/**========END_OF_FRAGMENT========**/

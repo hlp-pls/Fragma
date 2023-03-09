@@ -1,0 +1,104 @@
+#version 330
+out vec4 outputColor;
+in vec2 UV;
+
+uniform sampler2D bckbuffer;
+uniform vec2 resolution;
+uniform vec2 mouse;
+uniform float time;
+
+#define PI 3.1415
+
+float rand(vec3 p){return fract(sin(dot(p, vec3(87.1313, 31.5757, 17.2323))+sin(dot(p, vec3(15.1313, 67.4747, 76.1313)))) * 4189.3257);}
+	
+float smin( float a, float b, float k ){
+    float h = max( k-abs(a-b), 0.0 )/k;
+    return min( a, b ) - h*h*k*(1.0/4.0);
+}
+
+vec2 distToScene(vec3 p){
+float floor_plane = p.y+.5;
+p.x -= time;
+vec3 op = p;
+p = mod(p,1.)-.5;
+float ball = length(p)-.2;
+float pillar = length(p.xz)-.05;
+pillar = min(pillar, length(p.xy)-.05);
+pillar = min(pillar, length(p.yz)-.05);
+float bulb = length(op-vec3(-1.5-time,.0,1.*sin(time)))-.1;
+float dist = ball;
+dist = smin(ball,pillar,.15);
+
+float id=0.;
+if(dist > bulb){
+id=1.;
+}
+
+dist = min(dist,bulb);
+
+return vec2(dist,id);
+}
+
+void main() {
+	vec2 uv = UV;
+    vec2 tc = uv;
+    vec2 rs = resolution;
+    uv = (uv-.5)*rs/rs.y;
+    
+    float lon = rand(vec3(uv,.0))*2.*PI;
+	float lat = rand(vec3(uv,1.))*PI;
+	float rad = rand(vec3(uv,2.));
+    float pck = rand(vec3(uv,3.));
+	vec3 shake = vec3(cos(lat)*cos(lon),
+	cos(lat)*sin(lon),
+	sin(lat))*rad*.5;
+    
+    vec3 campos = vec3(1.,0.,0.);
+    vec3 lookat = vec3(0.,0.,0.);
+    
+    //if(pck > .5)
+    campos += shake;
+    //lookat += move;
+    
+    vec3 dir = normalize(lookat-campos);
+    
+    float plane_dst = 1.;
+    vec3 plane_center = campos + dir * plane_dst;
+    vec3 plane_y_axis = cross(dir,cross(dir, vec3(0.,-1.,0.)));
+    vec3 plane_x_axis = cross(dir, plane_y_axis);
+    
+    vec3 plane_uv = plane_center + plane_y_axis * uv.y + plane_x_axis * uv.x;
+    
+    vec3 ray = normalize(plane_uv - campos);
+    vec3 ray_origin = campos;
+    
+    float depth = 0.;
+    float id = 0.;
+    for(int i=0; i<64; i++){
+        vec2 march_dist = distToScene(ray_origin);
+        depth += march_dist.x;
+       id = march_dist.y;
+        ray_origin += ray * march_dist.x;
+       if(depth < .01 || depth > 100.){
+            break;
+       }
+    }
+    
+    vec3 col = vec3(sin(7.*depth)*.5+.5,
+    sin(4.*depth)*.5+.5,
+    sin(3.5*depth)*.5+.5) * vec3(2./depth);
+    
+    if(id == 1.){
+    col = vec3(2./depth);
+    }
+    
+    col *=  1. / pow(length(ray_origin-vec3(-1.5,.0,1.*sin(time))),2.);
+    
+    tc = (tc-.5)*1.005+.5;
+    vec3 samp = texture(bckbuffer,tc).rgb;
+    
+    col = mix(col,samp,.8);
+    
+	outputColor = vec4(col,1.);
+}
+/**========END_OF_FRAGMENT========**/

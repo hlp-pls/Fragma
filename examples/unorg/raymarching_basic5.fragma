@@ -1,0 +1,61 @@
+#version 330
+out vec4 outputColor;
+in vec2 UV;
+
+uniform sampler2D bckbuffer;
+uniform vec2 resolution;
+uniform vec2 mouse;
+uniform float time;
+
+float distToScene(vec3 p){
+float floor_plane = p.y+.5;
+p = mod(p,1.)-.5;
+float ball = length(p)-.08;
+float pillar = length(p.xz)-.01;
+float dist = ball;
+//dist = min(ball,pillar);
+return dist;
+}
+
+void main() {
+	vec2 uv = UV;
+    vec2 rs = resolution;
+    uv = (uv-.5)*rs/rs.y;
+    
+    vec3 move = vec3(.0,0.,-time);
+    
+    vec3 campos = vec3(4.*cos(time*.2),1.,4.*sin(time*.2));
+    vec3 lookat = vec3(0.,0.,0.);
+    
+    campos += move;
+    lookat += move;
+    
+    vec3 dir = normalize(lookat-campos);
+    
+    float plane_dst = 1.;
+    vec3 plane_center = campos + dir * plane_dst;
+    vec3 plane_y_axis = cross(dir,cross(dir, vec3(0.,-1.,0.)));
+    vec3 plane_x_axis = cross(dir, plane_y_axis);
+    
+    vec3 plane_uv = plane_center + plane_y_axis * uv.y + plane_x_axis * uv.x;
+    
+    vec3 ray = normalize(plane_uv - campos);
+    vec3 ray_origin = campos;
+    
+    float depth = 0;
+    for(int i=0; i<64; i++){
+        float march_dist = distToScene(ray_origin);
+        depth += march_dist;
+        ray_origin += ray * march_dist;
+       if(depth < .01 || depth > 100.){
+            break;
+       }
+    }
+    
+    vec3 col = vec3(sin(14.*depth+time)*.5+.5,
+    sin(13.*depth+time)*.5+.5,
+    sin(17.5*depth+time)*.5+.5) * vec3(1./depth);
+    
+	outputColor = vec4(col,1.);
+}
+/**========END_OF_FRAGMENT========**/

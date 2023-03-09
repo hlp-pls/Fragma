@@ -1,0 +1,53 @@
+#version 330
+out vec4 outputColor;
+in vec2 UV;
+
+uniform sampler2D bckbuffer;
+uniform vec2 resolution;
+uniform vec2 mouse;
+uniform float time;
+
+float distToScene(vec3 p){
+float floor_plane = p.y;
+float ball = length(p)-.4;
+float dist = floor_plane;
+dist = min(dist, ball);
+return dist;
+}
+
+void main() {
+	vec2 uv = UV;
+    vec2 rs = resolution;
+    uv = (uv-.5)*rs/rs.y;
+    uv *= 2.;
+    
+    vec3 campos = vec3(1.*cos(time),1.,1.*sin(time));
+    vec3 lookat = vec3(0.,0.,0.);
+    
+    vec3 dir = normalize(lookat-campos);
+    
+    float plane_dst = 1.;
+    vec3 plane_center = campos + dir * plane_dst;
+    vec3 plane_y_axis = cross(dir,cross(dir, vec3(0.,-1.,0.)));
+    vec3 plane_x_axis = cross(dir, plane_y_axis);
+    
+    vec3 plane_uv = plane_center + plane_y_axis * uv.y + plane_x_axis * uv.x;
+    
+    vec3 ray = normalize(plane_uv - campos);
+    vec3 ray_origin = campos;
+    
+    float depth = 0;
+    for(int i=0; i<64; i++){
+        float march_dist = distToScene(ray_origin);
+        depth += march_dist;
+        ray_origin += ray * march_dist;
+       if(depth < .01 || depth > 100.){
+            break;
+       }
+    }
+    
+    vec3 col = vec3(1./depth);
+    
+	outputColor = vec4(col,1.);
+}
+/**========END_OF_FRAGMENT========**/

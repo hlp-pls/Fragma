@@ -1,0 +1,88 @@
+#version 330
+out vec4 outputColor;
+in vec2 UV;
+
+uniform sampler2D bckbuffer;
+uniform vec2 resolution;
+uniform vec2 mouse;
+uniform float time;
+
+const float mouseSize = 0.01;
+const float viscosityConstant = 0.98;
+const float heightCompensation = 0.0;
+
+#define PI 3.1415
+#define BOUNDS 1.0
+
+void main() {
+	vec2 rs = resolution.xy;
+	vec2 cellSize = 1.0 / rs.xy;
+
+    vec2 uv = UV;
+
+    // heightmapValue.x == height from previous frame
+    // heightmapValue.y == height from penultimate frame
+    // heightmapValue.z, heightmapValue.w not used
+    vec4 heightmapValue = texture( bckbuffer, uv );
+
+    // Get neighbours
+    vec4 north = texture( bckbuffer, uv + vec2( 0.0, cellSize.y ) );
+    vec4 south = texture( bckbuffer, uv + vec2( 0.0, - cellSize.y ) );
+    vec4 east = texture( bckbuffer, uv + vec2( cellSize.x, 0.0 ) );
+    vec4 west = texture( bckbuffer, uv + vec2( - cellSize.x, 0.0 ) );
+
+    // https://web.archive.org/web/20080618181901/http://freespace.virgin.net/hugo.elias/graphics/x_water.htm
+
+    float newHeight = ( ( north.x + south.x + east.x + west.x ) * 0.5 - heightmapValue.y ) * viscosityConstant;
+
+    
+    // Mouse influence
+    vec2 muv = (uv - .5)*rs/rs.y;
+    vec2 ms = (mouse)*rs/rs.y;
+    float mousePhase = clamp( length(uv - vec2(ms.x, ms.y) ) * PI / mouseSize, 0.0, PI );
+    newHeight += ( cos( mousePhase ) + 1.0 ) * 0.28;
+
+    heightmapValue.y = heightmapValue.x;
+    heightmapValue.x = newHeight;
+
+    outputColor = vec4(heightmapValue.rgb,1.);
+	}
+/**========END_OF_FRAGMENT========**/#version 330
+out vec4 outputColor;
+in vec2 UV;
+
+uniform sampler2D bckbuffer;
+uniform vec2 resolution;
+uniform vec2 mouse;
+uniform float time;
+uniform sampler2D buffer_1;
+
+#define PI 3.1415
+  
+void main() {
+	vec2 rs = resolution.xy;
+	vec2 uv = UV;
+    vec2 tc = uv;
+    vec2 cellSize = 1. / rs;
+    float h_sc = 10.;
+    vec3 normal = vec3(
+		( texture( buffer_1, uv + vec2( - cellSize.x, 0 ) ).x
+		 - texture( buffer_1, uv + vec2( cellSize.x, 0 ) ).x ) * h_sc,
+		( texture( buffer_1, uv + vec2( 0, - cellSize.y ) ).x
+		 - texture( buffer_1, uv + vec2( 0, cellSize.y ) ).x ) * h_sc,
+    1.0 );
+	vec3 col = texture(buffer_1,uv).rgb;
+    col = normal;
+    vec2 gtc = floor(tc*100.)/100.;
+	vec2 tcf = fract(tc*100.)-.5;
+	tcf *= rs/rs.y;
+
+	float hh = texture(buffer_1, gtc).x * h_sc;
+		
+    float dist = abs(.0-tcf.y)-hh;
+    dist = 1.-smoothstep(.0,.005,dist);
+		
+    col.rgb = mix(vec3(1.),vec3(0.,0.,0.),dist);
+	outputColor = vec4(col.rgb,1.);
+}
+/**========END_OF_FRAGMENT========**/

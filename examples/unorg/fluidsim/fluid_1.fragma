@@ -1,0 +1,86 @@
+#version 330
+out vec4 outputColor;
+in vec2 UV;
+
+uniform sampler2D bckbuffer;
+uniform vec2 resolution;
+uniform vec2 mouse;
+uniform float time;
+
+uniform float count;
+const float epsilon = 1.0;
+const float density = 1.0;
+const float delta = .01;
+
+uniform vec2 mousedt;
+uniform bool mousedown;
+  
+void main() {
+	vec2 uv = UV;
+	vec4 col = texture(bckbuffer, uv);
+
+    //float obs = texture(obstacle, uv).r;
+	bool no_obstacle = true;//(obs == 1.0)? true : false;
+
+    if(time <= 1.0){
+			//uv *= 2.0;
+			//uv = fract(uv);
+			//col.rg = sin(uv.yx * 3.1415 * 2.0) / (length(vUv - 0.5) + 1.0);
+        col.rgb = vec3(.0);
+	}else{
+      //
+        if(no_obstacle){
+            if(count == 1.0){
+          //advection
+            uv.xy -= texture(bckbuffer, uv).rg * delta;
+            col.xy = texture(bckbuffer, uv).xy;
+          
+          //add velocity
+                if(mousedown){
+                    float mr = smoothstep(0.04, 0.03, length(uv - mouse));
+                    col.xy += mr * mousedt * 50.;
+                }
+           }
+        
+        //divergence
+        float divergence = (-2.0 * density * epsilon / delta) * (
+            texture(bckbuffer, uv + vec2(1.0, 0.0) / resolution).x -
+            texture(bckbuffer, uv + vec2(-1.0, 0.0) / resolution).x +
+            texture(bckbuffer, uv + vec2(0.0, 1.0) / resolution).y -
+            texture(bckbuffer, uv + vec2(0.0, -1.0) / resolution).y
+        );
+
+        //pressure
+        float pressure = (
+          divergence +
+          texture(bckbuffer, uv + vec2(2.0, 0.0) / resolution).z +
+          texture(bckbuffer, uv + vec2(-2.0, 0.0) / resolution).z +
+          texture(bckbuffer, uv + vec2(0.0, 2.0) / resolution).z +
+          texture(bckbuffer, uv + vec2(0.0, -2.0) / resolution).z
+        ) / 4.0;
+
+        col.z = pressure;
+
+        //gradient
+        col.x = col.x - (
+          texture(bckbuffer, uv + vec2(1.0,0.0)/resolution).z - 
+          texture(bckbuffer, uv + vec2(-1.0,0.0)/resolution).z) * delta / (2.0 * density * epsilon);
+        col.y = col.y - (
+          texture(bckbuffer, uv + vec2(0.0,1.0)/resolution).z - 
+          texture(bckbuffer, uv + vec2(0.0,-1.0)/resolution).z) * delta / (2.0 * density * epsilon);
+        }else{
+            col.rgb = texture(bckbuffer, uv+texture(bckbuffer, uv).xy * delta).rgb;
+        }
+    
+    
+
+    }
+
+    if(!no_obstacle){
+        col.rgb = vec3(0.0);
+    }
+
+	outputColor = vec4(col.rgb, 1.0);
+}
+
+/**========END_OF_FRAGMENT========**/
