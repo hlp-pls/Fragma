@@ -9,6 +9,8 @@ import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
+from __popup import CustomDialog
+
 class MGL_WINDOW(mglw.WindowConfig):
     
     def __init__(self, **kwargs):
@@ -21,6 +23,7 @@ class MGL_WINDOW(mglw.WindowConfig):
         self.size = kwargs["wnd"].size
         self.window = kwargs["wnd"]
         self.app = kwargs["app"]
+        self.qfont = kwargs["qfont"]
         self.pixel_density = kwargs["pixel_density"]
         self.pass_repetitions = kwargs["pass_repetitions"]
         self.timer = mglw.Timer()
@@ -64,12 +67,13 @@ class MGL_WINDOW(mglw.WindowConfig):
                     pass_repetition=int(self.pass_repetitions[i].text()))
                 self.__fbos.append(new_fbo)
                 #self.app.clearConsole()
+                self.app.setConsole("")
             except Exception as e:
                 has_exception = True
                 e_mssg = str(e)
                 e_mssg = e_mssg.split("===============")[1]
                 print(e_mssg)
-                self.app.printConsole(e_mssg)
+                self.app.setConsole(e_mssg)
         
         if has_exception == False:
             print(len(self.__fbos))
@@ -92,8 +96,14 @@ class MGL_WINDOW(mglw.WindowConfig):
                 # --> error : window opens for a second time
                 # use lock file --> done
                 # --> checks closed time and stops restarting if time elapsed is shorter than a given time
-                record_done_mssg = QMessageBox()
-                record_done_mssg.setText('Recording Completed')
+                record_done_mssg = CustomDialog(
+                    parent=self.app, 
+                    flags=Qt.FramelessWindowHint, 
+                    title="record", 
+                    message="Recording finished!",
+                    font=self.qfont,
+                    type="MESSAGE"
+                )
                 record_done_mssg.exec()
         else:
             self.window.close()

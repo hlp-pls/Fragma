@@ -59,17 +59,23 @@ from datetime import datetime
 
 import sys
 import os
-import re  
+import re 
+from functools import partial
 from pathlib import Path
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.Qsci import *
 
+#--> custom lexer for Qscintilla
 from __lexer import GLSLLexer
+#--> custom moderngl window class
 from __mgl_window import MGL_WINDOW
+#--> custom pyqt class
 from __labeled_int_field import LabelledIntField
 from __labeled_float_field import LabelledFloatField
+from __popup import CustomDialog
+from __uniform_button import UniformButton
 
 #--> LOCK FILE
 from __pid_lock import FLOCK
@@ -81,6 +87,8 @@ in vec2 UV;
 uniform sampler2D bckbuffer;
 uniform vec2 resolution;
 uniform vec2 mouse;
+uniform vec2 mousedt;
+uniform bool mousedown;
 uniform float time;
 
 void main() {
@@ -136,7 +144,7 @@ class CustomMainWindow(QMainWindow):
 
         # Define the geometry of the main window
         #self.setGeometry(300, 300, 800, 600)
-        self.resize(800, 650)
+        self.resize(800, 750)
         self.center()
         self.setWindowTitle("Fragma")
 
@@ -307,14 +315,21 @@ class CustomMainWindow(QMainWindow):
         self.__rec_btn.setFont(self.__myFont)
         con_layout.addWidget(self.__rec_btn)
         
-
-       
-
+        self.__rec_popup = CustomDialog(
+            parent=self, 
+            flags=Qt.FramelessWindowHint, 
+            title="record", 
+            message="Set recording duration (seconds)",
+            font=self.__myFont,
+            type="FLOAT_INPUT"
+            )
+        
         # self.__projnm_btn = QLineEdit()
         # self.__projnm_btn.setMaximumWidth(200)
         # con_layout.addWidget(self.__projnm_btn)
         # self.__projnm_btn.setText("Fragment Name")
 
+         
         panel_layout.addLayout(con_layout)
         self.__lyt.addLayout(panel_layout)
         
@@ -338,7 +353,11 @@ class CustomMainWindow(QMainWindow):
         self.__lyt.addLayout(self.__editors_layout)
         #self.__editors = []
         #self.__editor_compressions = []
-        
+
+        self.__uniform_panel = QHBoxLayout()
+        self.__lyt.addLayout(self.__uniform_panel)
+        self.__uniform_panel.addStretch(9)
+       
         self.__new_editor_action()
 
         self.__console = QTextEdit()
@@ -540,6 +559,8 @@ class CustomMainWindow(QMainWindow):
             elif int(repetition.text()) > 50:
                 repetition.setText(str(50))
 
+        editors = self.__editor_tabs.findChildren(QsciScintilla)
+
         max_size = int(self.__mgl_max_size[0] / self.pd_div.getValue())
         window_dimension_changed = False
         if self.wdiv.getValue() < 2 or self.wdiv.getValue() > max_size or self.hdiv.getValue() < 2 or self.hdiv.getValue() > max_size:
@@ -552,7 +573,7 @@ class CustomMainWindow(QMainWindow):
 
         if self.__runner is None:
             self.__runner_window = self.__mgl_window_cls(
-                title="Sketch",
+                title="Fragma",
                 gl_version=(3, 3),
                 size=(self.wdiv.getValue(), self.hdiv.getValue()),
                 cursor=True,
@@ -567,8 +588,9 @@ class CustomMainWindow(QMainWindow):
                 pixel_density=compressions,#self.pd_div.getValue(),
                 pass_repetitions=repetitions,
                 fps=self.fps_div.getValue(),
-                recording=recording)
-            self.__runner.__setup__(editors=self.__editor_tabs.findChildren(QsciScintilla))
+                recording=recording,
+                qfont=self.__myFont)
+            self.__runner.__setup__(editors=editors)
         elif isinstance(self.__runner, MGL_WINDOW):
             self.__runner.close_window()
             self.__runner = None
@@ -576,11 +598,13 @@ class CustomMainWindow(QMainWindow):
     
     def setConsole(self, message):
          self.__console.setText(message)
+         self.__console.verticalScrollBar().setValue(self.__console.verticalScrollBar().maximum())
              
     def printConsole(self, message):
         prev_txt = self.__console.toPlainText()
         new_txt = str(prev_txt) + "\n" + str(message)
         self.__console.setText(str(new_txt))
+        self.__console.verticalScrollBar().setValue(self.__console.verticalScrollBar().maximum())
     
     def __stop_btn_action(self):
         self.setConsole("")
@@ -591,18 +615,29 @@ class CustomMainWindow(QMainWindow):
     def __rec_btn_action(self):
         print("record button clicked!")
         self.__stop_btn_action()
-        # TODO : maybe make a custom qwidget window popup
-        duration, ok = QInputDialog.getDouble(self, 'Record Video', 'Recording Duration:', flags=Qt.FramelessWindowHint)
-        if ok:
-            print(float(duration))
+        #custom qdialog popup
+        if self.__rec_popup.exec():
+            duration = self.__rec_popup.getValue()
             filename = self.__file_dialog.getSaveFileName(self, '', '', "(*.mp4)")
-            print(filename)
             self.__run_btn_action(recording={
                 "filename": filename[0],
                 "duration": duration
             })
+            self.__stop_btn_action()
         else:
             print("recording canceled")
+        
+        # duration, ok = QInputDialog.getDouble(self, 'Record Video', 'Recording Duration:', flags=Qt.FramelessWindowHint)
+        # if ok:
+        #     print(float(duration))
+        #     filename = self.__file_dialog.getSaveFileName(self, '', '', "(*.mp4)")
+        #     print(filename)
+        #     self.__run_btn_action(recording={
+        #         "filename": filename[0],
+        #         "duration": duration
+        #     })
+        # else:
+        #     print("recording canceled")
 
     def __capture_btn_action(self):
         print("capture button clicked!")
@@ -610,6 +645,48 @@ class CustomMainWindow(QMainWindow):
             filename = self.__file_dialog.getSaveFileName(self, '', '', "(*.png)")
             self.__runner.capture(filename[0])
             self.__stop_btn_action()
+
+    def __set_uniform_btns(self):
+        editors = self.__editor_tabs.findChildren(QsciScintilla)
+        
+        buffer_btn_index = self.__uniform_panel.count() - 1
+        print("buffer buttons length", buffer_btn_index)
+        while buffer_btn_index >= 0:
+            buffer_btn = self.__uniform_panel.itemAt(buffer_btn_index).widget()
+            if buffer_btn is not None:
+                buffer_btn.setParent(None)
+                buffer_btn.deleteLater()
+            buffer_btn_index -=1
+
+        for editor in reversed(editors):
+            buffer_button_name = "buffer_"+str(editor.objectName())
+            buffer_button_id = str(editor.objectName())
+            buffer_button = UniformButton(title=buffer_button_name, name='buffer', font=self.__myFont, id=buffer_button_id)
+            buffer_button.clicked.connect(partial(self.__uniform_btn_action, buffer_button))
+            self.__uniform_panel.insertWidget(self.__uniform_panel.count() - 1, buffer_button)
+
+    def __uniform_btn_action(self, button):
+        print("uniform button clicked", button.ID)
+
+        editors = self.__editor_tabs.findChildren(QsciScintilla)
+        active_editor = editors[len(editors)-1]
+        active_editor_text = active_editor.text()
+        uniform_code = "uniform sampler2D buffer_" + str(button.ID) + ";"
+
+        if uniform_code in active_editor_text or button.ID == active_editor.objectName():
+            print("unable to add uniform", button.ID, active_editor.objectName())
+        else:
+            if button.ID != active_editor.objectName():
+                split_text = active_editor_text.split('uniform', 1)
+                active_editor_text = ""
+                for (i, text) in enumerate(split_text):
+                    if i == 0:
+                        active_editor_text += text + uniform_code + " \n" + "uniform"
+                    else:
+                        active_editor_text += text
+                
+                active_editor.setText(active_editor_text)
+
 
     def __remove_editor_action(self, index):
         print("remove editor", index)
@@ -632,6 +709,8 @@ class CustomMainWindow(QMainWindow):
             #     self.__editor_tabs.removeTab(index)
             # else:
             #     print("just one left")
+        
+        self.__set_uniform_btns()
 
     def __new_editor_action(self, **kwargs):
         print("New Editor Button Clicked.")
@@ -680,13 +759,13 @@ class CustomMainWindow(QMainWindow):
             editor.setMarginsBackgroundColor(QColor("#ffffff"))
             editor.setMarginsFont(self.__myFont)
 
-            editor.setWrapMode(QsciScintilla.WrapWord)
-            editor.setWrapIndentMode(QsciScintilla.WrapIndentSame)
+            #editor.setWrapMode(QsciScintilla.WrapWord)
+            #editor.setWrapIndentMode(QsciScintilla.WrapIndentSame)
             
-            editor.setIndentationGuides(True)
+            #editor.setIndentationGuides(True)
             editor.setTabWidth(4)
             editor.setIndentationsUseTabs(False)
-            editor.setAutoIndent(True)
+            #editor.setAutoIndent(True)
 
             editor.setEolMode(QsciScintilla.EolUnix)
             editor.setEolVisibility(False)
@@ -712,6 +791,11 @@ class CustomMainWindow(QMainWindow):
             #self.__editors_layout.addWidget(editor)
         else:
             print("too many tabs")
+
+        self.__set_uniform_btns()
+        
+
+    
 
         
     ''''''

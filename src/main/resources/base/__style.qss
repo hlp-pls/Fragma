@@ -65,7 +65,7 @@ QTextEdit QScrollBar:vertical {
 
 QScrollBar::handle:vertical {
     min-height: 0px;
-    background: #6e6e6e;
+    background: rgba(200, 200, 200, 0.9);
     border: none;
     width: 8px;
     margin: 4px;
@@ -83,6 +83,40 @@ QScrollBar::sub-line:vertical {
     subcontrol-position: top;
     subcontrol-origin: margin;
 }
+
+QScrollBar:horizontal {              
+    border: none;
+    background: #ffffff;
+    height: 16px;
+    margin: 0px;
+    border-radius: 0px;
+}
+
+QTextEdit QScrollBar:horizontal {              
+    background: transparent;
+}
+
+QScrollBar::handle:horizontal {
+    min-height: 0px;
+    background: rgba(200, 200, 200, 0.9);
+    border: none;
+    width: 8px;
+    margin: 4px 20px 4px 4px;
+    border-radius: 4px;
+}
+
+QScrollBar::add-line:horizontal {
+    height: 0px;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+}
+
+QScrollBar::sub-line:horizontal {
+    height: 0px;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}
+
 
 QFrame#editor_frame {
     border-radius: 5px;
@@ -161,4 +195,31 @@ QDialog QDoubleSpinBox::down-button {
 
 QDialog QPushButton {
     background: #ffffff;
+}
+
+QDialog {
+    background: transparent;
+}
+
+QDialog QWidget {
+    background: #454545;
+    border-radius: 5px;
+}
+
+QDialog QLineEdit {
+    background: #ffffff;
+    border: none;
+    height: 20px;
+    border-radius: 12px;
+    padding: 2px 8px;
+    color: #000000;
+}
+
+QDialog QPushButton {
+    background: #ffffff;
+    border: none;
+    height: 20px;
+    border-radius: 12px;
+    padding: 2px 16px;
+    color: #000000;
 }

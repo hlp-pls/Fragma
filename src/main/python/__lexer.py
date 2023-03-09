@@ -125,9 +125,11 @@ class GLSLLexer(QsciLexerCustom):
                     # Green style
                     singleline_comm_flag = True
                     self.setStyling(token[1], 4)
-                elif token[0] in ["vec4", "vec3", "vec2", "mat2", "mat3", "mat4", "float", "int", "void", "in", "out", "uniform", "sampler2D", "const", "for", "return", "if"]:
+                elif token[0] in ["vec4", "vec3", "vec2", "mat2", "mat3", "mat4", "float", "int", "void", "in", "out", "uniform", "sampler2D", "const", "for", "return", "if", "bool"]:
                     self.setStyling(token[1], 2)
-                elif token[0] in ["bckbuffer", "mouse", "time", "resolution", "UV", "outputColor"]:
+                elif token[0] in ["bckbuffer", "mouse", "time", "resolution", "UV", "outputColor", "mousedt", "mousedown"]:
+                    self.setStyling(token[1], 5)
+                elif "buffer_" in token[0]:
                     self.setStyling(token[1], 5)
                 elif "\n" in token[0]:
                     self.setStyling(token[1], 10)
