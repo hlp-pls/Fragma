@@ -26,14 +26,15 @@ moviepy
 ```
 Fragma v0.0.4
 
-- Install with .dmg file in latest release
+- Install with .dmg file
+- Open Fragma
 - Set window size and preferred frame-rate
 - Edit GLSL code and click play button / stop with stop button
 - Open files (shortcut: command + o) with .fragma extension included in examples folder
 - Save files (shortcut: command + s) (save with the last pass editor selected to prevent pass order mixup)
 - Add passes with "+" button (5 passes max)
 - Each pass has two number inputs compression and iteration. Compression lower than 1.0 makes the pass smaller than the window buffer. Iteration sets the number of times the pass should be rendered each animation frame.
-- Add each pass as texture uniform (you can only add from a different pass - to reference the current pass texture, use bckbuffer uniform instead)
+- Add each pass as texture uniform (you can only add from a different pass - to reference the current pass texture, use bckbuffer uniform instead) by clicking buttons below editor.
 - Use capture button when the project is running. It will capture a frame and close.
 - Use recording to record as video.
 
