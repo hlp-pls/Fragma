@@ -16,32 +16,32 @@ pyglet
 moderngl
 moderngl-window
 glcontext
+moviepy
 ```
 
 ## How To Use
 [latest release](https://github.com/hlp-pls/Fragma/releases/latest) <br>
 [examples folder](https://github.com/hlp-pls/Fragma/tree/master/examples) <br>
-source code features may differ from release versions
 
 ```
-1. Download zip from latest release
-2. Install with .dmg file from zip
-3. Open Fragma
-4. Set window size and framerate with input field (width), (height), (framerate)
-5. Edit text and click play button (press stop button to close)
-6. Open files (shortcut: command + o) with .fragma extension included in examples folder
-7. Save files (shortcut: command + s)
+Fragma v0.0.4
 
-*** GLSL version change not available
-*** ERROR console is not yet fully implemented. Errors will keep appending to the end until the stop button is pressed and the console is cleared.
+- Install with .dmg file in latest release
+- Set window size and preferred frame-rate
+- Edit GLSL code and click play button / stop with stop button
+- Open files (shortcut: command + o) with .fragma extension included in examples folder
+- Save files (shortcut: command + s) (save with the last pass editor selected to prevent pass order mixup)
+- Add passes with "+" button (5 passes max)
+- Each pass has two number inputs compression and iteration. Compression lower than 1.0 makes the pass smaller than the window buffer. Iteration sets the number of times the pass should be rendered each animation frame.
+- Add each pass as texture uniform (you can only add from a different pass - to reference the current pass texture, use bckbuffer uniform instead)
+- Use capture button when the project is running. It will capture a frame and close.
+- Use recording to record as video.
+
+*** no GLSL version change available
 ```
 
 ## Usage Example
-video recording (realtime)
-
-https://user-images.githubusercontent.com/53251969/217433873-3254cc29-a5a5-48e8-b026-d97af3146ac9.mp4
-
-
+video recording (realtime) --> will be updated soon
 
 ## Copyright
 Made by [Choi gunhyuk](https://www.instagram.com/ch_gnhk/)
