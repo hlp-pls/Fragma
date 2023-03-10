@@ -7,17 +7,7 @@ No support yet for Windows and Linux. <br>
 
 ## Dependencies
 Built using [fbs](https://build-system.fman.io/)
-```
-fbs
-ctypes
-PyQt5
-qscintilla
-pyglet
-moderngl
-moderngl-window
-glcontext
-moviepy
-```
+[dependencies](https://github.com/hlp-pls/Fragma/blob/master/requirements/base.text)
 
 ## How To Use
 [latest release](https://github.com/hlp-pls/Fragma/releases/latest) <br>
