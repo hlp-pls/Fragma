@@ -23,8 +23,8 @@ moviepy
 [latest release](https://github.com/hlp-pls/Fragma/releases/latest) <br>
 [examples folder](https://github.com/hlp-pls/Fragma/tree/master/examples) <br>
 
-```
-Fragma v0.0.4
+
+Fragma v0.0.5
 
 - Install with .dmg file
 - Open Fragma
@@ -33,16 +33,19 @@ Fragma v0.0.4
 - Open files (shortcut: command + o) with .fragma extension included in examples folder
 - Save files (shortcut: command + s) (save with the last pass editor selected to prevent pass order mixup)
 - Add passes with "+" button (5 passes max)
-- Each pass has two number inputs compression and iteration. Compression lower than 1.0 makes the pass smaller than the window buffer. Iteration sets the number of times the pass should be rendered each animation frame.
+- Each pass has two number inputs "compression" and "iteration". 
+- Compression lower than 1.0 makes the pass smaller than the window buffer. 
+- Iteration sets the number of times the pass should be rendered each animation frame.
 - Add each pass as texture uniform (you can only add from a different pass - to reference the current pass texture, use bckbuffer uniform instead) by clicking buttons below editor.
 - Use capture button when the project is running. It will capture a frame and close.
 - Use recording to record as video.
 
 *** no GLSL version change available
-```
+
 
 ## Usage Example
-video recording (realtime) --> will be updated soon
+[video recording (realtime)](https://youtu.be/dSDGOPqqVj8)
+
 
 ## Copyright
 Made by [Choi gunhyuk](https://www.instagram.com/ch_gnhk/)
