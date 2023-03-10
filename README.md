@@ -6,8 +6,8 @@ Currently only supports MacOS versions same or higher than 12.0.1 (bulit on 12.0
 No support yet for Windows and Linux. <br>
 
 ## Dependencies
-Built using [fbs](https://build-system.fman.io/)
-[dependencies](https://github.com/hlp-pls/Fragma/blob/master/requirements/base.text)
+Built using [fbs](https://build-system.fman.io/) <br>
+[dependencies](https://github.com/hlp-pls/Fragma/blob/master/requirements/base.text) <br>
 
 ## How To Use
 [latest release](https://github.com/hlp-pls/Fragma/releases/latest) <br>
