@@ -400,8 +400,11 @@ class CustomMainWindow(QMainWindow):
         file = open(filename[0], 'r')
         file_data = file.read()
         #print(file_data)
-        for index in range(self.__editor_tabs.count()):
-            self.__remove_editor_action(index)
+        # for index in range(self.__editor_tabs.count()):
+        #     self.__remove_editor_action(index)
+
+        while self.__editor_tabs.count() >= 1:
+            self.__remove_editor_action(0)
 
         # editors = self.__editor_tabs.findChildren(QsciScintilla)
         # for editor in editors:
@@ -654,6 +657,10 @@ class CustomMainWindow(QMainWindow):
         while buffer_btn_index >= 0:
             buffer_btn = self.__uniform_panel.itemAt(buffer_btn_index).widget()
             if buffer_btn is not None:
+                try:
+                    buffer_btn.clicked.disconnect(partial(self.__uniform_btn_action, buffer_btn))
+                except:
+                    pass
                 buffer_btn.setParent(None)
                 buffer_btn.deleteLater()
             buffer_btn_index -=1
@@ -694,6 +701,7 @@ class CustomMainWindow(QMainWindow):
         tab = self.__editor_tabs.widget(index)
         #--> check if tab exists before using it
         if tab is not None:
+            print("deleting tab")
             editors = tab.findChildren(QsciScintilla)
             for editor in editors:
                 editor.setParent(None)
