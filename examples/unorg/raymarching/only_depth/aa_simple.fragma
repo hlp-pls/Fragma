@@ -1,0 +1,85 @@
+#version 330
+out vec4 outputColor;
+in vec2 UV;
+
+uniform sampler2D bckbuffer;
+uniform vec2 resolution;
+uniform vec2 mouse;
+uniform float time;
+
+#define AA 2
+
+vec2 rotate(vec2 p, float a){
+    return mat2(cos(a), -sin(a), sin(a), cos(a)) * p;
+}
+
+float get_dist(vec3 p){
+    p.xz = rotate(p.xz, time*.1);
+    float plane = p.y + .5;
+    
+    vec3 rep_p = p;
+    rep_p.xz = mod(p.xz,1.)-.5;
+    float ball = length(rep_p) - .2;
+    
+    float dist = plane;
+    dist = min(dist, ball);
+    
+    return dist;
+}
+
+void main() {
+	vec2 uv = UV;
+    vec2 rs = resolution;
+    uv = (uv-.5)*rs/rs.y;
+    
+    vec3 camera = vec3(0.,1.,-2.);
+    vec3 lookat = vec3(0.,0.,0.);
+    
+    vec3 cam_dir = normalize(lookat - camera);
+    
+    float cam_screen_dst = 1.;
+    vec3 screen_center = camera + cam_dir * cam_screen_dst;
+    
+    vec3 screen_y_axis = cross(cam_dir,cross(cam_dir,vec3(0.,-1.,0.))); 
+    vec3 screen_x_axis = cross(screen_y_axis, cam_dir);
+    
+    screen_y_axis = normalize(screen_y_axis);
+    screen_x_axis = normalize(screen_x_axis);
+    
+    
+    
+    float depth = 0.;
+    #if AA > 1   
+    for(float x=0.; x<float(AA); x++){
+    for(float y=0.; y<float(AA); y++){
+        vec2 delta_uv = vec2(x,y) / (float(AA) * rs);
+        uv += delta_uv;
+    #endif
+
+    vec3 screen_coords = screen_center + screen_y_axis * uv.y + screen_x_axis * uv.x;
+    
+    vec3 ray_origin = screen_coords;
+    vec3 ray_dir = normalize(ray_origin-camera);
+
+
+    for(int i=0; i<64; i++){
+       float step_depth = get_dist(ray_origin);
+       ray_origin += ray_dir * step_depth;
+       depth += step_depth;
+       if(depth < .01 || depth > 100){
+        break;
+       }
+    }
+
+    #if AA > 1
+    }
+    }
+
+    depth /= float(AA*AA);
+    #endif
+    
+    vec3 col = vec3(1./depth);
+    
+	outputColor = vec4(col,1.);
+}
+/**========END_OF_FRAGMENT========**/

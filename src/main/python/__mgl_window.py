@@ -91,7 +91,7 @@ class MGL_WINDOW(mglw.WindowConfig):
                 self.do_render(0.0)
             else:
                 clip = mvp.VideoClip(self.do_render, duration=self.recording["duration"])
-                clip.write_videofile(self.recording["filename"], fps=60)
+                clip.write_videofile(self.recording["filename"], fps=self.fps)
                 print("recording completed")
                 # --> error : window opens for a second time
                 # use lock file --> done
@@ -168,9 +168,17 @@ class MGL_WINDOW(mglw.WindowConfig):
                 time.sleep(self.fps_limit)
             #else:
                 #self.timer.time = t
+            
+            if self.recording is None:
+                current_time = self.timer.time
+            else:
+                current_time = t
+            
+            if self.recording is None:
+                time_took_to_render = current_time - self.prev_time
+            else:
+                time_took_to_render = self.fps_limit
 
-            current_time = self.timer.time
-            time_took_to_render = current_time - self.prev_time
             if time_took_to_render >= self.fps_limit:
                 self.window.clear()
                 last_fbo_ref = None
@@ -179,9 +187,9 @@ class MGL_WINDOW(mglw.WindowConfig):
                         if isinstance(__fbo, MGL_FBO):
                             if i == len(self.__fbos) - 1:
                                 last_fbo_ref = __fbo
-                                __fbo.render(time=self.timer.time, render_to_window=True)
+                                __fbo.render(time=current_time, render_to_window=True)
                             else:
-                                __fbo.render(time=self.timer.time, render_to_window=False)
+                                __fbo.render(time=current_time, render_to_window=False)
                 self.window.swap_buffers()
                 self.prev_time = current_time
 
