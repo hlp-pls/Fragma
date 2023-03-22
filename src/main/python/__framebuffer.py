@@ -142,6 +142,12 @@ class MGL_FBO:
         self.init_texture = self.ctx.texture((im.size[0], im.size[1]), components=4, data=im_DATA)
         self.init_texture_uniform = self.prog.get('init_texture', FakeUniform())
         self.init_texture_uniform.value = 1
+
+    def set_img_texture(self, path, name):
+        im = Image.open(path)
+        im_WIDTH, im_HEIGHT, im_DATA = im.size[0], im.size[1], im.convert('RGBA').tobytes("raw", "RGBA", 0, -1)
+        texture = self.ctx.texture((im.size[0], im.size[1]), components=4, data=im_DATA)
+        self.set_texture_uniform_auto(texture=texture,name=name)  
     
     def clear(self):
         self.fbo.clear()

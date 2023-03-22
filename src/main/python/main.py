@@ -287,15 +287,6 @@ class CustomMainWindow(QMainWindow):
         con_layout.addWidget(self.__run_btn)
         con_layout.setSpacing(10)
 
-        self.__compile_btn = QPushButton("")
-        #self.__compile_btn.setStyleSheet("border-image: url(" + self.__appctx.get_resource('play.png') + ")")
-        self.__compile_btn.setFixedWidth(24)
-        self.__compile_btn.setFixedHeight(24)
-        self.__compile_btn.clicked.connect(self.__compile_btn_action)
-        self.__compile_btn.setFont(self.__myFont)
-        con_layout.addWidget(self.__compile_btn)
-        con_layout.setSpacing(10)
-
         # Place Stop button
         self.__stop_btn = QPushButton("")
         self.__stop_btn.setStyleSheet("border-image: url(" + self.__appctx.get_resource('stop.png') + ")")
@@ -317,6 +308,16 @@ class CustomMainWindow(QMainWindow):
         self.__new_editor_btn.setFont(self.__myFont)
         con_layout.addWidget(self.__new_editor_btn)
         con_layout.addStretch(8)
+
+        # Place Compile / Play Once
+        self.__compile_btn = QPushButton("")
+        self.__compile_btn.setStyleSheet("border-image: url(" + self.__appctx.get_resource('play_once.png') + ")")
+        self.__compile_btn.setFixedWidth(24)
+        self.__compile_btn.setFixedHeight(24)
+        self.__compile_btn.clicked.connect(self.__compile_btn_action)
+        self.__compile_btn.setFont(self.__myFont)
+        con_layout.addWidget(self.__compile_btn)
+        con_layout.setSpacing(10)
 
         # Place Capture button
         self.__capture_btn = QPushButton("")
@@ -669,7 +670,7 @@ class CustomMainWindow(QMainWindow):
         elif isinstance(self.__runner, MGL_WINDOW):
             self.__runner.close_window()
             self.__runner = None
-            self.__run_btn_action()
+            self.__run_btn_action(compile=compile)
     
     def setConsole(self, message):
          self.__console.setText(message)
