@@ -36,8 +36,14 @@ class GLSLLexer(QsciLexerCustom):
 
         # Initialize fonts per style
         # ---------------------------
-        self.lexer_font = QFont("D2Coding", 16)
-        self.lexer_font_lh = QFont("D2Coding", 18)
+        self.lexer_font = QFont("D2Coding", 18)
+        self.line_height = 1.2
+        self.lexer_font_lh = QFont("D2Coding", int(self.lexer_font.pointSize() * self.line_height))
+        
+        self.setStyles()
+        #self.setDefaultFont(self.lexer_font_lh)
+
+    def setStyles(self):
         self.setFont(self.lexer_font, 0) 
         self.setFont(self.lexer_font, 1)
         self.setFont(self.lexer_font, 2)
@@ -46,8 +52,16 @@ class GLSLLexer(QsciLexerCustom):
         self.setFont(self.lexer_font, 5)
 
         self.setFont(self.lexer_font_lh, 10)
-        #self.setDefaultFont(self.lexer_font_lh)
 
+    def setFontSize(self, size):
+        self.lexer_font.setPointSize(size)
+        self.lexer_font_lh.setPointSize(int(self.lexer_font.pointSize() * self.line_height))
+        self.setStyles()
+
+    def setLineHeight(self, height):
+        self.line_height = height
+        self.lexer_font_lh.setPointSize(int(self.lexer_font.pointSize() * self.line_height))
+        self.setStyles()
 
     def language(self):
         return "GLSL"

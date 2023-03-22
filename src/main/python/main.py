@@ -182,6 +182,19 @@ class CustomMainWindow(QMainWindow):
         self.__file_menu.addAction(file_save_action)
         self.__file_menu.addAction(file_open_action)
 
+        file_fontsize_action = QAction(QIcon(), "&Font Size", self)
+        file_fontsize_action.setStatusTip("Font Size")
+        file_fontsize_action.triggered.connect(self.setFontSize)
+        
+        
+        file_lineheight_action = QAction(QIcon(), "&Line Height", self)
+        file_lineheight_action.setStatusTip("Line Height")
+        file_lineheight_action.triggered.connect(self.setLineHeight)
+
+        self.__file_menu = self.__menu.addMenu("&Editor")
+        self.__file_menu.addAction(file_fontsize_action)
+        self.__file_menu.addAction(file_lineheight_action)
+
         # Create frame and layout
         self.__frm = QFrame(self)
         #self.__frm.setStyleSheet("")
@@ -274,6 +287,15 @@ class CustomMainWindow(QMainWindow):
         con_layout.addWidget(self.__run_btn)
         con_layout.setSpacing(10)
 
+        self.__compile_btn = QPushButton("")
+        #self.__compile_btn.setStyleSheet("border-image: url(" + self.__appctx.get_resource('play.png') + ")")
+        self.__compile_btn.setFixedWidth(24)
+        self.__compile_btn.setFixedHeight(24)
+        self.__compile_btn.clicked.connect(self.__compile_btn_action)
+        self.__compile_btn.setFont(self.__myFont)
+        con_layout.addWidget(self.__compile_btn)
+        con_layout.setSpacing(10)
+
         # Place Stop button
         self.__stop_btn = QPushButton("")
         self.__stop_btn.setStyleSheet("border-image: url(" + self.__appctx.get_resource('stop.png') + ")")
@@ -321,7 +343,28 @@ class CustomMainWindow(QMainWindow):
             title="record", 
             message="Set recording duration (seconds)",
             font=self.__myFont,
-            type="FLOAT_INPUT"
+            type="FLOAT_INPUT",
+            initial_value=1.0
+            )
+        
+        self.__fontsize_popup = CustomDialog(
+            parent=self, 
+            flags=Qt.FramelessWindowHint, 
+            title="Font Size", 
+            message="Font Size",
+            font=self.__myFont,
+            type="INT_INPUT",
+            initial_value = 18
+            )
+        
+        self.__lineheight_popup = CustomDialog(
+            parent=self, 
+            flags=Qt.FramelessWindowHint, 
+            title="Line Height", 
+            message="Line Height",
+            font=self.__myFont,
+            type="FLOAT_INPUT",
+            initial_value=1.2
             )
         
         # self.__projnm_btn = QLineEdit()
@@ -378,6 +421,25 @@ class CustomMainWindow(QMainWindow):
         self.__m_state = None
 
     ''''''
+    def setFontSize(self):
+        print("set font size")
+        if self.__fontsize_popup.exec():
+            font_size = self.__fontsize_popup.getValue()
+            editors = self.__editor_tabs.findChildren(QsciScintilla)
+            for editor in editors:
+                lexer = editor.lexer()
+                lexer.setFontSize(font_size)
+            
+
+    def setLineHeight(self):
+        print("set line height")
+        if self.__lineheight_popup.exec():
+            line_size = self.__lineheight_popup.getValue()
+            editors = self.__editor_tabs.findChildren(QsciScintilla)
+            for editor in editors:
+                lexer = editor.lexer()
+                lexer.setLineHeight(line_size)
+
     def saveProject(self):
         print("save file")
         texts = ""
@@ -545,6 +607,15 @@ class CustomMainWindow(QMainWindow):
         if "recording" in kwargs:
             recording = kwargs["recording"]
             #print(kwargs["recording"])
+        
+        compile = False
+        if "compile" in kwargs:
+            compile = kwargs["compile"]
+        
+        # if recording == None:
+        #     if self.__runner is not None:
+        #         if self.__runner.paused == True:
+        #             self.__runner.play()
 
         #print(self.__editor_tabs.findChildren(QsciScintilla))
         #print("TEST", len(self.__editor_tabs.findChildren(QLineEdit)))
@@ -592,7 +663,8 @@ class CustomMainWindow(QMainWindow):
                 pass_repetitions=repetitions,
                 fps=self.fps_div.getValue(),
                 recording=recording,
-                qfont=self.__myFont)
+                qfont=self.__myFont,
+                compile=compile)
             self.__runner.__setup__(editors=editors)
         elif isinstance(self.__runner, MGL_WINDOW):
             self.__runner.close_window()
@@ -608,6 +680,9 @@ class CustomMainWindow(QMainWindow):
         new_txt = str(prev_txt) + "\n" + str(message)
         self.__console.setText(str(new_txt))
         self.__console.verticalScrollBar().setValue(self.__console.verticalScrollBar().maximum())
+    
+    def __compile_btn_action(self):
+        self.__run_btn_action(compile=True)
     
     def __stop_btn_action(self):
         self.setConsole("")

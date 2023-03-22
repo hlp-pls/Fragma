@@ -29,10 +29,13 @@ class MGL_WINDOW(mglw.WindowConfig):
         self.timer = mglw.Timer()
         self.timer.start()
         self.fps = kwargs["fps"]
+        self.fps = max(self.fps,1)
         self.fps_limit = 1 / self.fps
         self.has_closed = False
         self.recording = kwargs["recording"]
 
+        self.paused = kwargs["compile"]
+        
         #self.__stop_btn_action = self.app.__stop_btn_action
         #print("app", kwargs["app"].__stop_btn_action)
         #pyglet.app.run()
@@ -91,7 +94,7 @@ class MGL_WINDOW(mglw.WindowConfig):
                 self.do_render(0.0)
             else:
                 clip = mvp.VideoClip(self.do_render, duration=self.recording["duration"])
-                clip.write_videofile(self.recording["filename"], fps=self.fps)
+                clip.write_videofile(self.recording["filename"], fps=self.fps, logger=None)
                 print("recording completed")
                 # --> error : window opens for a second time
                 # use lock file --> done
@@ -162,40 +165,53 @@ class MGL_WINDOW(mglw.WindowConfig):
             self.window.close()
 
     def do_render(self, t):
-        while not self.window.is_closing:
+        if self.paused == True:
+            self.window.clear()
+            if self.has_set == True:
+                for i, __fbo in enumerate(self.__fbos):
+                    if isinstance(__fbo, MGL_FBO):
+                        if i == len(self.__fbos) - 1:
+                            __fbo.render(time=0.0, render_to_window=True)
+                        else:
+                            __fbo.render(time=0.0, render_to_window=False)
+            self.window.swap_buffers()
+        else:
+            while not self.window.is_closing:
+                
+                if self.recording is None:
+                    time.sleep(self.fps_limit)
+                #else:
+                    #self.timer.time = t
+                
+                if self.recording is None:
+                    current_time = self.timer.time
+                else:
+                    current_time = t
+                    progress = 100 * t / self.recording["duration"]
+                    print(f'recording progress : {progress:.2f}')
+                
+                if self.recording is None:
+                    time_took_to_render = current_time - self.prev_time
+                else:
+                    time_took_to_render = self.fps_limit
 
-            if self.recording is None:
-                time.sleep(self.fps_limit)
-            #else:
-                #self.timer.time = t
-            
-            if self.recording is None:
-                current_time = self.timer.time
-            else:
-                current_time = t
-            
-            if self.recording is None:
-                time_took_to_render = current_time - self.prev_time
-            else:
-                time_took_to_render = self.fps_limit
+                if time_took_to_render >= self.fps_limit:
+                    self.window.clear()
+                    last_fbo_ref = None
+                    if self.has_set == True:
+                        for i, __fbo in enumerate(self.__fbos):
+                            if isinstance(__fbo, MGL_FBO):
+                                if i == len(self.__fbos) - 1:
+                                    last_fbo_ref = __fbo
+                                    __fbo.render(time=current_time, render_to_window=True)
+                                else:
+                                    __fbo.render(time=current_time, render_to_window=False)
+                    self.window.swap_buffers()
+                    self.prev_time = current_time
 
-            if time_took_to_render >= self.fps_limit:
-                self.window.clear()
-                last_fbo_ref = None
-                if self.has_set == True:
-                    for i, __fbo in enumerate(self.__fbos):
-                        if isinstance(__fbo, MGL_FBO):
-                            if i == len(self.__fbos) - 1:
-                                last_fbo_ref = __fbo
-                                __fbo.render(time=current_time, render_to_window=True)
-                            else:
-                                __fbo.render(time=current_time, render_to_window=False)
-                self.window.swap_buffers()
-                self.prev_time = current_time
-
-                if self.recording is not None:
-                    img_buf = last_fbo_ref.fbo.read()
-                    img_width = last_fbo_ref.size[0]
-                    img_height = last_fbo_ref.size[1]
-                    img = np.frombuffer(img_buf, np.uint8).reshape(img_height, img_width, 3)[::-1]
-                    return img   
+                    if self.recording is not None:
+                        img_buf = last_fbo_ref.fbo.read()
+                        img_width = last_fbo_ref.size[0]
+                        img_height = last_fbo_ref.size[1]
+                        img = np.frombuffer(img_buf, np.uint8).reshape(img_height, img_width, 3)[::-1]
+                        return img   

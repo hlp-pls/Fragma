@@ -3,13 +3,15 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 from __labeled_float_field import LabelledFloatField
+from __labeled_int_field import LabelledIntField
 
 class CustomDialog(QDialog):
-    def __init__(self, parent=None, flags=None, title="", message="", font=None, type=""):
+    def __init__(self, parent=None, flags=None, title="", message="", font=None, type="", initial_value=None):
         super().__init__(parent, flags=flags)
 
         self.name = title
-        if type == "FLOAT_INPUT":
+        self.type = type
+        if type == "FLOAT_INPUT" or type == "INT_INPUT":
             QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         elif type == "MESSAGE":
             QBtn = QDialogButtonBox.Ok
@@ -18,8 +20,13 @@ class CustomDialog(QDialog):
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
-        self.float_field = LabelledFloatField(title="", font=font, initial_value=1.0)
-        self.float_field.lineEdit.setFixedWidth(80)
+        if type == "FLOAT_INPUT":
+            self.field = LabelledFloatField(title="", font=font, initial_value=initial_value)
+        elif type == "INT_INPUT":
+            self.field = LabelledIntField(title="", font=font, initial_value=initial_value)
+        
+        if type == "FLOAT_INPUT" or type == "INT_INPUT":
+            self.field.lineEdit.setFixedWidth(80)
 
         self.layout = QVBoxLayout()
         self.inner_layout = QVBoxLayout()
@@ -30,9 +37,9 @@ class CustomDialog(QDialog):
         #self.setCentralWidget(self.frame)
         message = QLabel(message)
         self.inner_layout.addWidget(message)
-        if type == "FLOAT_INPUT":
+        if type == "FLOAT_INPUT" or type == "INT_INPUT":
             self.inner_layout.setSpacing(20)
-            self.inner_layout.addWidget(self.float_field.lineEdit)
+            self.inner_layout.addWidget(self.field.lineEdit)
         self.inner_layout.setSpacing(20)
         self.inner_layout.addWidget(self.buttonBox)
         self.layout.addWidget(self.frame)
@@ -43,4 +50,5 @@ class CustomDialog(QDialog):
         return super().accept()
     
     def getValue(self):
-        return self.float_field.getValue()
+        return self.field.getValue()
+       
