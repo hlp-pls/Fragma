@@ -201,6 +201,14 @@ QDialog {
     background: transparent;
 }
 
+QProgressBar {
+    color: transparent;
+}
+
+QProgressBar::chunk {
+    
+}
+
 QDialog QWidget {
     background: #454545;
     border-radius: 5px;
