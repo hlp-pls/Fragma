@@ -9,8 +9,8 @@ from __framebuffer import MGL_FBO
 
 import os
 import time
-import numpy as np
-import sys
+#import numpy as np
+#import sys
 
 MARKER = "/**========END_OF_FRAGMENT========**/"
 
@@ -191,7 +191,6 @@ fragma_wnd = mgl_window_cls(
     fullscreen=False,
     vsync=True
 )
-
 fragma_ctx = moderngl.create_context(standalone=False, require=(330))
 fragma_app = FragmaApp(
     ctx=fragma_ctx, 

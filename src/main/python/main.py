@@ -2,6 +2,8 @@ from fbs_runtime.application_context import cached_property
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
 from PyQt5.QtWidgets import QMainWindow
 
+import PyInstaller
+
 #--> imports for moviepy packaging : https://github.com/Zulko/moviepy/issues/591
 import imageio
 import imageio_ffmpeg
@@ -704,13 +706,22 @@ class CustomMainWindow(QMainWindow):
         self.__console.verticalScrollBar().setValue(self.__console.verticalScrollBar().maximum())
     
     def __build_btn_action(self):
+        root_dir = os.path.dirname(os.path.abspath(__file__))
+        print(root_dir)
+        dir_name = root_dir
+        del_specs = os.listdir(dir_name)
+
+        for item in del_specs:
+            if item.endswith(".spec"):
+                os.remove(os.path.join(dir_name, item))
+
         try:
             filename = self.__file_dialog.getSaveFileName(self, 'Save App', '', "")
             file_path = filename[0].rsplit(sep="/",maxsplit=1)[0]
             file_name = filename[0].rsplit(sep="/",maxsplit=1)[1]
             print(file_path, file_name)
             print("bulid test")
-            root_dir = os.path.dirname(os.path.abspath(__file__))
+            
             self.__file_dialog.hide()
 
             compressions = self.__editor_tabs.findChildren(QLineEdit, 'compression')
@@ -746,18 +757,24 @@ class CustomMainWindow(QMainWindow):
                     texts += compressions[i].text() + MARKER
                     texts += repetitions[i].text() + MARKER
                     texts += editor.text() + MARKER
+            
+            if os.path.exists(root_dir+"/data"):
+                pass
+            else:
+                os.makedirs(root_dir+"/data")
 
             with open(os.path.join(root_dir+"/data","build_temp.txt"), "w") as txtfile:
                 txtfile.write(texts)
 
             #print(os.path.abspath(self.__appctx.get_resource('icon.ico')))
             
-            #work_path = "--workpath="+root_dir+"/app_build_dir/"
+            #work_path = "--workpath="+root_dir+"/build/"
+            spec_path = "--specpath="+root_dir
             dist_path = "--distpath="+file_path
             app_name = "--name="+file_name
             app_icon = "--icon="+os.path.abspath(self.__appctx.get_resource('icon.ico'))
             app_data = "--add-data="+root_dir+"/data:data"
-            build_script = root_dir+'/builder.py'
+            build_script = os.path.abspath(self.__appctx.get_resource('builder.py'))
             build_process = [
                 'pyinstaller', 
                 #'--onefile', 
@@ -766,12 +783,12 @@ class CustomMainWindow(QMainWindow):
                 '--clean', 
                 '-y',
                 #work_path, 
-                dist_path,
+                dist_path, spec_path,
                 app_name, app_icon, app_data,
                 build_script]
             subprocess.run(build_process,stdout=subprocess.PIPE).stdout.decode('utf-8')
-        except:
-            print("build failed")
+        except Exception as e:
+            print("build failed", e)
 
     def __compile_btn_action(self):
         self.__run_btn_action(compile=True)
