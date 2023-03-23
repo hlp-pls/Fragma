@@ -74,7 +74,7 @@ from __mgl_window import MGL_WINDOW
 #--> custom pyqt class
 from __labeled_int_field import LabelledIntField
 from __labeled_float_field import LabelledFloatField
-from __popup import CustomDialog
+from __popup import CustomDialog, CustomProgressDialog
 from __uniform_button import UniformButton
 
 #--> LOCK FILE
@@ -340,7 +340,7 @@ class CustomMainWindow(QMainWindow):
         
         self.__rec_popup = CustomDialog(
             parent=self, 
-            flags=Qt.FramelessWindowHint, 
+            flags=Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint, 
             title="record", 
             message="Set recording duration (seconds)",
             font=self.__myFont,
@@ -348,9 +348,19 @@ class CustomMainWindow(QMainWindow):
             initial_value=1.0
             )
         
+        # self.__rec_progress_popup = CustomProgressDialog(
+        #     parent=self, 
+        #     flags=Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint, 
+        #     title="record", 
+        #     message="Recording Progress",
+        #     font=self.__myFont,
+        #     type="PROGRESS",
+        #     initial_value=0.0
+        #     )
+        
         self.__fontsize_popup = CustomDialog(
             parent=self, 
-            flags=Qt.FramelessWindowHint, 
+            flags=Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint, 
             title="Font Size", 
             message="Font Size",
             font=self.__myFont,
@@ -697,12 +707,19 @@ class CustomMainWindow(QMainWindow):
         #custom qdialog popup
         if self.__rec_popup.exec():
             duration = self.__rec_popup.getValue()
-            filename = self.__file_dialog.getSaveFileName(self, '', '', "(*.mp4)")
-            self.__run_btn_action(recording={
-                "filename": filename[0],
-                "duration": duration
-            })
-            self.__stop_btn_action()
+            
+            try:
+                filename = self.__file_dialog.getSaveFileName(self, 'Save File', '', "(*.mp4)")
+                print(filename[0])
+                self.__run_btn_action(recording={
+                    "filename": filename[0],
+                    "duration": duration
+                    #"progress": self.__rec_progress_popup
+                })
+
+                self.__stop_btn_action()
+            except:
+                print("recording error")
         else:
             print("recording canceled")
         

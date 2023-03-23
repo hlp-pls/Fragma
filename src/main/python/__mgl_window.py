@@ -9,7 +9,7 @@ import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
-from __popup import CustomDialog
+from __popup import CustomDialog, CustomProgressDialog
 
 class MGL_WINDOW(mglw.WindowConfig):
     
@@ -35,6 +35,8 @@ class MGL_WINDOW(mglw.WindowConfig):
         self.recording = kwargs["recording"]
 
         self.paused = kwargs["compile"]
+
+        self.recording_progress = None
         
         #self.__stop_btn_action = self.app.__stop_btn_action
         #print("app", kwargs["app"].__stop_btn_action)
@@ -93,15 +95,29 @@ class MGL_WINDOW(mglw.WindowConfig):
             if self.recording is None:
                 self.do_render(0.0)
             else:
+                self.recording_progress = CustomProgressDialog(
+                    parent=self.app, 
+                    flags=Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint, 
+                    title="record", 
+                    message="Recording Progress",
+                    font=self.qfont,
+                    type="PROGRESS"
+                )
+                self.recording_progress.show()
+
                 clip = mvp.VideoClip(self.do_render, duration=self.recording["duration"])
                 clip.write_videofile(self.recording["filename"], fps=self.fps, logger=None)
+
                 print("recording completed")
+                self.recording_progress.setProgress(100)
+                self.recording_progress.hide()
+
                 # --> error : window opens for a second time
                 # use lock file --> done
                 # --> checks closed time and stops restarting if time elapsed is shorter than a given time
                 record_done_mssg = CustomDialog(
                     parent=self.app, 
-                    flags=Qt.FramelessWindowHint, 
+                    flags=Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint, 
                     title="record", 
                     message="Recording finished!",
                     font=self.qfont,
@@ -188,7 +204,10 @@ class MGL_WINDOW(mglw.WindowConfig):
                 else:
                     current_time = t
                     progress = 100 * t / self.recording["duration"]
-                    print(f'recording progress : {progress:.2f}')
+                    #QApplication.processEvents()
+                    if self.recording_progress is not None:
+                        self.recording_progress.setProgress(int(progress))
+                    #print(f'recording progress : {progress:.2f}')
                 
                 if self.recording is None:
                     time_took_to_render = current_time - self.prev_time
