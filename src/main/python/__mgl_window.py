@@ -69,7 +69,8 @@ class MGL_WINDOW(mglw.WindowConfig):
                     enable_backbuffer = True,
                     window = self.window,
                     name="buffer_"+str(editor.objectName()),
-                    pass_repetition=int(self.pass_repetitions[i].text()))
+                    pass_repetition=int(self.pass_repetitions[i].text()),
+                    pixel_density=float(self.pixel_density[i].text()))
                 self.__fbos.append(new_fbo)
                 #self.app.clearConsole()
                 self.app.setConsole("")

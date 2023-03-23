@@ -40,6 +40,8 @@ class MGL_FBO:
         self.size = kwargs["size"]
         self.enable_backbuffer = kwargs["enable_backbuffer"]
         self.window = kwargs["window"]
+
+        self.pixel_density = kwargs["pixel_density"]
         #print(self.window)
 
         self.pass_name = kwargs["name"]
@@ -117,7 +119,43 @@ class MGL_FBO:
         self.init_texture = None
         self.texture_counter = 3
 
-  
+    #TODO: --> THIS MAKES EVERYTHING GO WRONG. Find Proper way to resize
+    def resize(self, width, height):
+        self.fbo.release()
+        self.bck_fbo.release()
+
+        self.size = (int(width * 2.0 * self.pixel_density), int(height * 2.0 * self.pixel_density))
+        
+        self.texture = self.ctx.texture(self.size, components=4, dtype="f4")
+        self.fbo = self.ctx.framebuffer(self.texture)
+        self.prog = self.ctx.program(vertex_shader=self.quad_vertex_shader,fragment_shader=self.kwargs["fragment_shader"])
+        
+        self.content = [(self.vertices, '2f 2f', 'in_vert', 'in_uv'),]
+        self.vao = self.ctx.vertex_array(self.prog,self.content)
+
+        self.rndr_prog = self.ctx.program(vertex_shader=self.quad_vertex_shader, fragment_shader=self.copier_fragment_shader)
+        self.rndr_vao = self.ctx.vertex_array(self.rndr_prog,self.content)
+        self.rndr_target_uniform = self.rndr_prog.get('copy_target', FakeUniform())
+        self.rndr_target_uniform.value = 0
+
+        self.time = self.prog.get('time', FakeUniform())
+        self.resolution = self.prog.get('resolution', FakeUniform())
+        self.count = self.prog.get('count', FakeUniform())
+
+        self.resolution.value = self.size
+
+        if self.enable_backbuffer == True:
+            self.bck_texture = self.ctx.texture(self.size, components=4, dtype="f4")
+            self.bck_fbo = self.ctx.framebuffer(self.bck_texture)
+            self.bck_prog = self.ctx.program(vertex_shader=self.quad_vertex_shader, fragment_shader=self.copier_fragment_shader)
+            self.bck_vao = self.ctx.vertex_array(self.bck_prog, self.content)
+
+            self.backbuffer_uniform = self.prog.get('backbuffer', FakeUniform())
+            self.copy_target_uniform = self.bck_prog.get('copy_target', FakeUniform())
+
+            self.backbuffer_uniform.value = 0
+            self.copy_target_uniform.value = 0
+
     def set_uniform(self, name, value):
         uniform = self.prog.get(name, FakeUniform())
         uniform.value = value

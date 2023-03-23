@@ -60,6 +60,7 @@ from datetime import datetime
 import sys
 import os
 import re 
+import subprocess
 from functools import partial
 from pathlib import Path
 from PyQt5.QtWidgets import *
@@ -308,6 +309,16 @@ class CustomMainWindow(QMainWindow):
         self.__new_editor_btn.setFont(self.__myFont)
         con_layout.addWidget(self.__new_editor_btn)
         con_layout.addStretch(8)
+
+        # Place Build
+        self.__build_btn = QPushButton("")
+        #self.__build_btn.setStyleSheet("border-image: url(" + self.__appctx.get_resource('play_once.png') + ")")
+        self.__build_btn.setFixedWidth(24)
+        self.__build_btn.setFixedHeight(24)
+        self.__build_btn.clicked.connect(self.__build_btn_action)
+        self.__build_btn.setFont(self.__myFont)
+        con_layout.addWidget(self.__build_btn)
+        con_layout.setSpacing(10)
 
         # Place Compile / Play Once
         self.__compile_btn = QPushButton("")
@@ -692,6 +703,76 @@ class CustomMainWindow(QMainWindow):
         self.__console.setText(str(new_txt))
         self.__console.verticalScrollBar().setValue(self.__console.verticalScrollBar().maximum())
     
+    def __build_btn_action(self):
+        try:
+            filename = self.__file_dialog.getSaveFileName(self, 'Save App', '', "")
+            file_path = filename[0].rsplit(sep="/",maxsplit=1)[0]
+            file_name = filename[0].rsplit(sep="/",maxsplit=1)[1]
+            print(file_path, file_name)
+            print("bulid test")
+            root_dir = os.path.dirname(os.path.abspath(__file__))
+            self.__file_dialog.hide()
+
+            compressions = self.__editor_tabs.findChildren(QLineEdit, 'compression')
+            for compression in compressions:
+                if float(compression.text()) <= 0.1:
+                    compression.setText(str(0.1))
+                elif float(compression.text()) > 1.0:
+                    compression.setText(str(1.0))
+
+            repetitions = self.__editor_tabs.findChildren(QLineEdit, 'repetition')
+            for repetition in repetitions:
+                if int(repetition.text()) <= 1:
+                    repetition.setText(str(1))
+                elif int(repetition.text()) > 50:
+                    repetition.setText(str(50))
+            
+            max_size = int(self.__mgl_max_size[0] / self.pd_div.getValue())
+            if self.wdiv.getValue() < 2 or self.wdiv.getValue() > max_size or self.hdiv.getValue() < 2 or self.hdiv.getValue() > max_size:
+                window_width = min(max(self.wdiv.getValue(), 2),max_size)
+                window_height = min(max(self.hdiv.getValue(), 2),max_size)
+                self.printConsole(f"Window dimension ({self.wdiv.getValue()},{self.hdiv.getValue()}) out of range.\nWindow dimension set to ({window_width},{window_height})")
+                self.wdiv.lineEdit.setText(str(window_width))
+                self.hdiv.lineEdit.setText(str(window_height))
+
+            texts = ""
+            texts += str(self.fps_div.getValue()) + MARKER
+            texts += str(self.wdiv.getValue()) + MARKER + str(self.hdiv.getValue()) + MARKER
+            texts += "empty" + MARKER
+            editors = self.__editor_tabs.findChildren(QsciScintilla)
+            for (i, editor) in enumerate(editors):
+                if editor.parent != None:
+                    texts += str(editor.objectName()) + MARKER
+                    texts += compressions[i].text() + MARKER
+                    texts += repetitions[i].text() + MARKER
+                    texts += editor.text() + MARKER
+
+            with open(os.path.join(root_dir+"/data","build_temp.txt"), "w") as txtfile:
+                txtfile.write(texts)
+
+            #print(os.path.abspath(self.__appctx.get_resource('icon.ico')))
+            
+            #work_path = "--workpath="+root_dir+"/app_build_dir/"
+            dist_path = "--distpath="+file_path
+            app_name = "--name="+file_name
+            app_icon = "--icon="+os.path.abspath(self.__appctx.get_resource('icon.ico'))
+            app_data = "--add-data="+root_dir+"/data:data"
+            build_script = root_dir+'/builder.py'
+            build_process = [
+                'pyinstaller', 
+                #'--onefile', 
+                '--windowed',
+                #'--noconsole',
+                '--clean', 
+                '-y',
+                #work_path, 
+                dist_path,
+                app_name, app_icon, app_data,
+                build_script]
+            subprocess.run(build_process,stdout=subprocess.PIPE).stdout.decode('utf-8')
+        except:
+            print("build failed")
+
     def __compile_btn_action(self):
         self.__run_btn_action(compile=True)
     

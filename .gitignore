@@ -6,3 +6,9 @@ src/build/settings/secret.json
 src/main/python/__pycache__/
 src/main/python/fragma_time_rec.txt
 src/main/python/fragma.lock
+dist/
+build/
+build_data/
+src/main/python/data/
+src/main/python/build_data/
+*.spec
