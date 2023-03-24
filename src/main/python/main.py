@@ -2,6 +2,7 @@ from fbs_runtime.application_context import cached_property
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
 from PyQt5.QtWidgets import QMainWindow
 
+import PyInstaller.__main__
 import PyInstaller
 
 #--> imports for moviepy packaging : https://github.com/Zulko/moviepy/issues/591
@@ -62,6 +63,7 @@ from datetime import datetime
 import sys
 import os
 import re 
+import shutil
 import subprocess
 from functools import partial
 from pathlib import Path
@@ -708,12 +710,25 @@ class CustomMainWindow(QMainWindow):
     def __build_btn_action(self):
         root_dir = os.path.dirname(os.path.abspath(__file__))
         print(root_dir)
+        
+        #--> delete previously created .spec files
         dir_name = root_dir
         del_specs = os.listdir(dir_name)
-
         for item in del_specs:
             if item.endswith(".spec"):
                 os.remove(os.path.join(dir_name, item))
+
+        #--> delete previously create build files and txt files in data folder
+        del_folder = root_dir+"/data"
+        for item in os.listdir(del_folder):
+            file_path = os.path.join(del_folder, item)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print('Failed to delete %s. Reason: %s' % (file_path, e)) 
 
         try:
             filename = self.__file_dialog.getSaveFileName(self, 'Save App', '', "")
@@ -768,13 +783,28 @@ class CustomMainWindow(QMainWindow):
 
             #print(os.path.abspath(self.__appctx.get_resource('icon.ico')))
             
-            #work_path = "--workpath="+root_dir+"/build/"
+            work_path = "--workpath="+root_dir+"/data"
             spec_path = "--specpath="+root_dir
             dist_path = "--distpath="+file_path
             app_name = "--name="+file_name
             app_icon = "--icon="+os.path.abspath(self.__appctx.get_resource('icon.ico'))
             app_data = "--add-data="+root_dir+"/data:data"
             build_script = os.path.abspath(self.__appctx.get_resource('builder.py'))
+            
+            #Broken Pipe error when freezed
+            # build_process = [
+            #     build_script, 
+            #     #'--onefile', 
+            #     '--windowed',
+            #     #'--noconsole',
+            #     '--clean', 
+            #     '-y',
+            #     #work_path, 
+            #     dist_path, spec_path,
+            #     app_name, app_icon, app_data]
+            
+            # PyInstaller.__main__.run(build_process,)
+
             build_process = [
                 'pyinstaller', 
                 #'--onefile', 
@@ -782,12 +812,13 @@ class CustomMainWindow(QMainWindow):
                 #'--noconsole',
                 '--clean', 
                 '-y',
-                #work_path, 
+                work_path, 
                 dist_path, spec_path,
                 app_name, app_icon, app_data,
                 build_script]
             subprocess.run(build_process,stdout=subprocess.PIPE).stdout.decode('utf-8')
         except Exception as e:
+            self.printConsole(str(e))
             print("build failed", e)
 
     def __compile_btn_action(self):

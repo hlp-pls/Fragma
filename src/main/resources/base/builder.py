@@ -1,4 +1,5 @@
 #--> imports for mgl packaging
+import numpy as np
 import moderngl
 import moderngl_window as mglw
 import moderngl_window.context.pyglet
@@ -9,7 +10,6 @@ from __framebuffer import MGL_FBO
 
 import os
 import time
-#import numpy as np
 #import sys
 
 MARKER = "/**========END_OF_FRAGMENT========**/"
