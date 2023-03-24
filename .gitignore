@@ -11,4 +11,6 @@ build/
 build_data/
 src/main/python/data/
 src/main/python/build_data/
+src/main/icons/data/
+src/main/resources/base/data/
 *.spec

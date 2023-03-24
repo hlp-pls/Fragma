@@ -2,8 +2,11 @@ from fbs_runtime.application_context import cached_property
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
 from PyQt5.QtWidgets import QMainWindow
 
-import PyInstaller.__main__
-import PyInstaller
+# https://stackoverflow.com/questions/58755392/how-to-include-pyinstaller-inside-a-pyinstaller-bundle
+# --> in short pyinstaller cannot be included in a program built by pyinstaller!
+# import PyInstaller.__main__
+# import PyInstaller
+# import nuitka --> this does not help packaging
 
 #--> imports for moviepy packaging : https://github.com/Zulko/moviepy/issues/591
 import imageio
@@ -315,14 +318,14 @@ class CustomMainWindow(QMainWindow):
         con_layout.addStretch(8)
 
         # Place Build
-        self.__build_btn = QPushButton("")
-        #self.__build_btn.setStyleSheet("border-image: url(" + self.__appctx.get_resource('play_once.png') + ")")
-        self.__build_btn.setFixedWidth(24)
-        self.__build_btn.setFixedHeight(24)
-        self.__build_btn.clicked.connect(self.__build_btn_action)
-        self.__build_btn.setFont(self.__myFont)
-        con_layout.addWidget(self.__build_btn)
-        con_layout.setSpacing(10)
+        # self.__build_btn = QPushButton("")
+        # #self.__build_btn.setStyleSheet("border-image: url(" + self.__appctx.get_resource('play_once.png') + ")")
+        # self.__build_btn.setFixedWidth(24)
+        # self.__build_btn.setFixedHeight(24)
+        # self.__build_btn.clicked.connect(self.__build_btn_action)
+        # self.__build_btn.setFont(self.__myFont)
+        # con_layout.addWidget(self.__build_btn)
+        # con_layout.setSpacing(10)
 
         # Place Compile / Play Once
         self.__compile_btn = QPushButton("")
@@ -708,8 +711,15 @@ class CustomMainWindow(QMainWindow):
         self.__console.verticalScrollBar().setValue(self.__console.verticalScrollBar().maximum())
     
     def __build_btn_action(self):
-        root_dir = os.path.dirname(os.path.abspath(__file__))
+        root_dir = os.path.abspath(self.__appctx.get_resource())
+        #root_dir = os.path.dirname(os.path.abspath(__file__))
         print(root_dir)
+        #print(self.__appctx.get_resource())
+
+        if os.path.exists(root_dir+"/data"):
+            pass
+        else:
+            os.makedirs(root_dir+"/data")
         
         #--> delete previously created .spec files
         dir_name = root_dir
@@ -773,50 +783,54 @@ class CustomMainWindow(QMainWindow):
                     texts += repetitions[i].text() + MARKER
                     texts += editor.text() + MARKER
             
-            if os.path.exists(root_dir+"/data"):
-                pass
-            else:
-                os.makedirs(root_dir+"/data")
+            
 
             with open(os.path.join(root_dir+"/data","build_temp.txt"), "w") as txtfile:
                 txtfile.write(texts)
 
-            #print(os.path.abspath(self.__appctx.get_resource('icon.ico')))
-            
-            work_path = "--workpath="+root_dir+"/data"
-            spec_path = "--specpath="+root_dir
-            dist_path = "--distpath="+file_path
-            app_name = "--name="+file_name
-            app_icon = "--icon="+os.path.abspath(self.__appctx.get_resource('icon.ico'))
-            app_data = "--add-data="+root_dir+"/data:data"
+            print(os.path.abspath(self.__appctx.get_resource('icon.ico')))
+            out_path = '--output-dir='+file_path
+            #comp_name = "--company-name=Fragma"
+            #product_name = "--product-name="+file_name
+            app_name = "--output-filename="+file_name
+            app_data = "--include-data-dir="+root_dir+"/data=data"
+            app_icon = "--macos-app-icon="+os.path.abspath(self.__appctx.get_resource('icon.ico'))
             build_script = os.path.abspath(self.__appctx.get_resource('builder.py'))
-            
-            #Broken Pipe error when freezed
+            build_process = [
+                'python',
+                '-m',
+                'nuitka', 
+                '--macos-create-app-bundle',
+                '--standalone',
+                '--low-memory', '--remove-output',
+                '--follow-imports',
+                out_path,
+                #comp_name, product_name,
+                app_data, app_icon, app_name, 
+                build_script]
+            subprocess.run(build_process,stdout=subprocess.PIPE).stdout.decode('utf-8')
+
+            #--> NEEDS REPLACEMENT
+            #print(os.path.abspath(self.__appctx.get_resource('icon.ico')))
+            # work_path = "--workpath="+root_dir+"/data"
+            # spec_path = "--specpath="+root_dir
+            # dist_path = "--distpath="+file_path
+            # app_name = "--name="+file_name
+            # app_icon = "--icon="+os.path.abspath(self.__appctx.get_resource('icon.ico'))
+            # app_data = "--add-data="+root_dir+"/data:data"
+            # build_script = os.path.abspath(self.__appctx.get_resource('builder.py'))
             # build_process = [
-            #     build_script, 
+            #     'pyinstaller', 
             #     #'--onefile', 
             #     '--windowed',
             #     #'--noconsole',
             #     '--clean', 
             #     '-y',
-            #     #work_path, 
+            #     work_path, 
             #     dist_path, spec_path,
-            #     app_name, app_icon, app_data]
-            
-            # PyInstaller.__main__.run(build_process,)
-
-            build_process = [
-                'pyinstaller', 
-                #'--onefile', 
-                '--windowed',
-                #'--noconsole',
-                '--clean', 
-                '-y',
-                work_path, 
-                dist_path, spec_path,
-                app_name, app_icon, app_data,
-                build_script]
-            subprocess.run(build_process,stdout=subprocess.PIPE).stdout.decode('utf-8')
+            #     app_name, app_icon, app_data,
+            #     build_script]
+            # subprocess.run(build_process,stdout=subprocess.PIPE).stdout.decode('utf-8')
         except Exception as e:
             self.printConsole(str(e))
             print("build failed", e)
