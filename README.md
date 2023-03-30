@@ -1,3 +1,5 @@
+# THIS REPOSITORY IS DEPRECATED. PREPARING FOR MIGRATION TO ELECTRON.
+
 # Fragma
 [WEBSITE UNDERCONSTRUCTION](https://hlp-pls.github.io/Fragma/) <br>
 GLSL editor for playing with fragment shader. <br>

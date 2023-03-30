@@ -788,49 +788,49 @@ class CustomMainWindow(QMainWindow):
             with open(os.path.join(root_dir+"/data","build_temp.txt"), "w") as txtfile:
                 txtfile.write(texts)
 
-            print(os.path.abspath(self.__appctx.get_resource('icon.ico')))
-            out_path = '--output-dir='+file_path
-            #comp_name = "--company-name=Fragma"
-            #product_name = "--product-name="+file_name
-            app_name = "--output-filename="+file_name
-            app_data = "--include-data-dir="+root_dir+"/data=data"
-            app_icon = "--macos-app-icon="+os.path.abspath(self.__appctx.get_resource('icon.ico'))
-            build_script = os.path.abspath(self.__appctx.get_resource('builder.py'))
-            build_process = [
-                'python',
-                '-m',
-                'nuitka', 
-                '--macos-create-app-bundle',
-                '--standalone',
-                '--low-memory', '--remove-output',
-                '--follow-imports',
-                out_path,
-                #comp_name, product_name,
-                app_data, app_icon, app_name, 
-                build_script]
-            subprocess.run(build_process,stdout=subprocess.PIPE).stdout.decode('utf-8')
-
-            #--> NEEDS REPLACEMENT
-            #print(os.path.abspath(self.__appctx.get_resource('icon.ico')))
-            # work_path = "--workpath="+root_dir+"/data"
-            # spec_path = "--specpath="+root_dir
-            # dist_path = "--distpath="+file_path
-            # app_name = "--name="+file_name
-            # app_icon = "--icon="+os.path.abspath(self.__appctx.get_resource('icon.ico'))
-            # app_data = "--add-data="+root_dir+"/data:data"
+            # print(os.path.abspath(self.__appctx.get_resource('icon.ico')))
+            # out_path = '--output-dir='+file_path
+            # #comp_name = "--company-name=Fragma"
+            # #product_name = "--product-name="+file_name
+            # app_name = "--output-filename="+file_name
+            # app_data = "--include-data-dir="+root_dir+"/data=data"
+            # app_icon = "--macos-app-icon="+os.path.abspath(self.__appctx.get_resource('icon.ico'))
             # build_script = os.path.abspath(self.__appctx.get_resource('builder.py'))
             # build_process = [
-            #     'pyinstaller', 
-            #     #'--onefile', 
-            #     '--windowed',
-            #     #'--noconsole',
-            #     '--clean', 
-            #     '-y',
-            #     work_path, 
-            #     dist_path, spec_path,
-            #     app_name, app_icon, app_data,
+            #     'python',
+            #     '-m',
+            #     'nuitka', 
+            #     '--macos-create-app-bundle',
+            #     '--standalone',
+            #     '--low-memory', '--remove-output',
+            #     '--follow-imports',
+            #     out_path,
+            #     #comp_name, product_name,
+            #     app_data, app_icon, app_name, 
             #     build_script]
             # subprocess.run(build_process,stdout=subprocess.PIPE).stdout.decode('utf-8')
+
+            #--> NEEDS REPLACEMENT
+            print(os.path.abspath(self.__appctx.get_resource('icon.ico')))
+            work_path = "--workpath="+root_dir+"/data"
+            spec_path = "--specpath="+root_dir
+            dist_path = "--distpath="+file_path
+            app_name = "--name="+file_name
+            app_icon = "--icon="+os.path.abspath(self.__appctx.get_resource('icon.ico'))
+            app_data = "--add-data="+root_dir+"/data:data"
+            build_script = os.path.abspath(self.__appctx.get_resource('builder.py'))
+            build_process = [
+                'pyinstaller', 
+                #'--onefile', 
+                '--windowed',
+                #'--noconsole',
+                '--clean', 
+                '-y',
+                work_path, 
+                dist_path, spec_path,
+                app_name, app_icon, app_data,
+                build_script]
+            subprocess.run(build_process,stdout=subprocess.PIPE).stdout.decode('utf-8')
         except Exception as e:
             self.printConsole(str(e))
             print("build failed", e)
